@@ -8,7 +8,6 @@ import org.datepollsystems.waiterrobot.android.stripe.Stripe
 import org.datepollsystems.waiterrobot.android.stripe.StripeTokenProvider
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
 import org.datepollsystems.waiterrobot.shared.core.OS
-import org.datepollsystems.waiterrobot.shared.core.di.initKoin
 import org.datepollsystems.waiterrobot.shared.generated.localization.localizationContext
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -28,11 +27,9 @@ class WaiterRobotApp : Application() {
             appVersion = BuildConfig.VERSION_NAME.substringBeforeLast("-"), // Remove appBuild from version
             appBuild = BuildConfig.VERSION_CODE,
             phoneModel = phoneModel,
+            allowedHostsCsv = BuildConfig.ALLOWED_HOSTS_CSV,
             stripeProvider = Stripe,
-            allowedHostsCsv = BuildConfig.ALLOWED_HOSTS_CSV
-        )
-
-        initKoin {
+        ) {
             androidContext(this@WaiterRobotApp)
             val androidModule = module {
                 single<ConnectionTokenProvider> { StripeTokenProvider(get()) }

@@ -6,11 +6,16 @@ package org.datepollsystems.waiterrobot.shared.utils
  * - https://github.com/orbit-mvi/orbit-swift-gradle-plugin/blob/main/src/main/resources/Publisher.swift.mustache
  */
 
-import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import org.datepollsystems.waiterrobot.shared.core.CommonApp
+import org.datepollsystems.waiterrobot.shared.core.di.getLogger
 
 /**
  * Collects the flow and calls the [onEach] function for each received item.
@@ -27,7 +32,7 @@ fun <T : Any> Flow<T>.subscribe(
 ): Job = this
     .onEach { onEach(it) }
     .catch {
-        Logger.withTag("FlowSubscription").i("Flow catch: ${it.message} ($it)")
+        CommonApp.getLogger("FlowSubscription").i("Flow catch: ${it.message} ($it)")
         onThrow(it)
     }
     .onCompletion { onComplete() }

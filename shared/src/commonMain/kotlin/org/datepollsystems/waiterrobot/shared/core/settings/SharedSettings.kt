@@ -30,6 +30,7 @@ class SharedSettings : KoinComponent {
 
     internal var enableContactlessPayment: Boolean by settings.boolean(defaultValue = true)
     internal var apiBase: String? by settings.nullableString()
+    internal var waiterId: String? by settings.nullableString()
 
     // Can not use the settings "native" serialization as this currently can not be combined with settings flow
     internal var tokens: Tokens? by settings.nullableJsonSerialized()

@@ -16,9 +16,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.parameter.parametersOf
 
-@Suppress("unused") // Only used by iOS
-fun initKoinIos() = initKoin()
-
 @Suppress("unused", "TooManyFunctions") // Only used by iOS
 object IosKoinComponent : KoinComponent {
     fun logger(tag: String): Logger = get { parametersOf(tag) }

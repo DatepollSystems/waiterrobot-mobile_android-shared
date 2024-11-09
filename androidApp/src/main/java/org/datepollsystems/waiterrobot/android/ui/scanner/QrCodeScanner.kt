@@ -39,6 +39,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.barcode.common.Barcode
 import kotlinx.coroutines.launch
 import org.datepollsystems.waiterrobot.android.util.QrCodeAnalyzer
+import org.datepollsystems.waiterrobot.android.util.getLogger
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.cameraPermissionRequired
 import org.datepollsystems.waiterrobot.shared.generated.localization.errorOpeningCamera
@@ -53,6 +54,7 @@ import kotlin.coroutines.suspendCoroutine
 fun QrCodeScanner(onResult: (Barcode) -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
+    val logger = getLogger("QrCodeScanner")
 
     var errorMessage: String? by remember { mutableStateOf(null) }
 
@@ -129,8 +131,7 @@ fun QrCodeScanner(onResult: (Barcode) -> Unit) {
                             throw e
                         } catch (e: Exception) {
                             errorMessage = L.qrScanner.errorOpeningCamera()
-                            // TODO Logger.error
-                            e.printStackTrace()
+                            logger.e(e) { "Failed to open camera" }
                         }
                     }
                     previewView

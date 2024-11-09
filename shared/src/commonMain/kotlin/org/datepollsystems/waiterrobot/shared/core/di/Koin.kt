@@ -16,8 +16,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.KoinAppDeclaration
 
-fun initKoin(appDeclaration: KoinAppDeclaration = { }) = startKoin {
-    appDeclaration()
+internal fun initKoin(appDeclaration: KoinAppDeclaration?) = startKoin {
+    appDeclaration?.invoke(this)
     modules(
         platformModule,
         coreModule,

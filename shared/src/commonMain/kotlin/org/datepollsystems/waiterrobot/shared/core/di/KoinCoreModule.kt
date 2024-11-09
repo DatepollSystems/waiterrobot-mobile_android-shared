@@ -12,6 +12,7 @@ import kotlinx.serialization.json.Json
 import org.datepollsystems.waiterrobot.shared.core.data.api.createAuthorizedClient
 import org.datepollsystems.waiterrobot.shared.core.data.api.createBasicClient
 import org.datepollsystems.waiterrobot.shared.core.data.db.createRealmDB
+import org.datepollsystems.waiterrobot.shared.core.sentry.SentryLogWriter
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
@@ -25,7 +26,10 @@ fun Scope.getApiClient(): HttpClient {
 internal val coreModule = module {
     val baseLogger = Logger(
         // TODO different severity for debug and release build?
-        StaticConfig(Severity.Verbose, logWriterList = listOf(platformLogWriter())),
+        StaticConfig(
+            Severity.Verbose,
+            logWriterList = listOf(platformLogWriter(), SentryLogWriter())
+        ),
         tag = "WaiterRobot"
     )
     factory { (tag: String?) -> if (tag != null) baseLogger.withTag(tag) else baseLogger }

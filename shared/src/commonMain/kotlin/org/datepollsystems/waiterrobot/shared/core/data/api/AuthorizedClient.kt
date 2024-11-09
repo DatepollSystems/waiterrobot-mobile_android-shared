@@ -7,6 +7,7 @@ import io.ktor.client.plugins.auth.providers.bearer
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
+import org.datepollsystems.waiterrobot.shared.core.di.getLogger
 import org.datepollsystems.waiterrobot.shared.core.settings.Tokens
 import org.datepollsystems.waiterrobot.shared.features.auth.repository.AuthRepository
 import io.ktor.client.plugins.logging.Logger as KtorLogger
@@ -39,7 +40,9 @@ internal fun createAuthorizedClient(
                         throw e
                     } catch (e: Exception) {
                         // TODO improve request errors handling (-> try again, no connection info)
-                        ktorLogger.log(e.message ?: "Error while refreshing token")
+                        CommonApp.getLogger("AuthorizedClientTokenRefresh").e(e) {
+                            "Error while refreshing token"
+                        }
                         CommonApp.logout()
                         null
                     }

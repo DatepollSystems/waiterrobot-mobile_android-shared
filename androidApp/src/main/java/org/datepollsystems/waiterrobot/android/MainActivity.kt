@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode
 import androidx.core.view.WindowCompat
-import co.touchlab.kermit.Logger
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType
@@ -20,15 +19,18 @@ import kotlinx.datetime.until
 import org.datepollsystems.waiterrobot.android.ui.RootView
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
 import org.datepollsystems.waiterrobot.shared.core.CommonApp.MIN_UPDATE_INFO_HOURS
+import org.datepollsystems.waiterrobot.shared.core.di.injectLoggerForClass
 import org.datepollsystems.waiterrobot.shared.features.settings.models.AppTheme
 import org.datepollsystems.waiterrobot.shared.root.RootViewModel
 import org.datepollsystems.waiterrobot.shared.utils.extensions.defaultOnNull
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.component.KoinComponent
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), KoinComponent {
 
     private val vm: RootViewModel by viewModel()
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
+    private val logger by injectLoggerForClass()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         // Only handle the deep-links when the app is created the first time (but not when it gets recreated)
         if (savedInstanceState == null) {
             intent?.data?.let {
-                Logger.d("Started with intent: $it") // TODO inject logger
+                logger.d("Started with intent: $it")
                 vm.onDeepLink(it.toString())
             }
         }

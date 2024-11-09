@@ -5,19 +5,21 @@ import org.datepollsystems.waiterrobot.shared.utils.extensions.truncate
 class AppInfo(
     val appVersion: String,
     val appBuild: Int,
-    phoneModel: String,
+    val phoneModel: String,
     val os: OS,
     allowedHostsCsv: String
 ) {
     val allowedHosts = allowedHostsCsv.split(",").map { it.trim() }.toSet()
-    val sessionName = "$os; $appVersion ($appBuild); $phoneModel".truncate(MAX_SESSION_LENGTH)
+    val sessionName = toString().truncate(MAX_SESSION_LENGTH)
+
+    override fun toString(): String = "$os; $appVersion ($appBuild); $phoneModel"
 }
 
-sealed class OS {
+sealed class OS(val name: String) {
     abstract val version: String
 
-    class Android(override val version: String) : OS()
-    class Ios(override val version: String) : OS()
+    class Android(override val version: String) : OS("Android")
+    class Ios(override val version: String) : OS("iOS")
 
     final override fun toString(): String = when (this) {
         is Android -> "Android-${this.version}"

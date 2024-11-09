@@ -1,7 +1,10 @@
 package org.datepollsystems.waiterrobot.shared.features.switchevent.repository
 
+import io.sentry.kotlin.multiplatform.Sentry
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
 import org.datepollsystems.waiterrobot.shared.core.repository.AbstractRepository
+import org.datepollsystems.waiterrobot.shared.core.sentry.SentryTag
+import org.datepollsystems.waiterrobot.shared.core.sentry.setTag
 import org.datepollsystems.waiterrobot.shared.features.switchevent.api.EventLocationApi
 import org.datepollsystems.waiterrobot.shared.features.switchevent.models.Event
 
@@ -28,6 +31,9 @@ internal class SwitchEventRepository(
     suspend fun switchToEvent(event: Event): Boolean {
         val oldEventId = CommonApp.settings.selectedEvent?.id
         CommonApp.settings.selectedEvent = event
+        Sentry.configureScope { scope ->
+            scope.setTag(SentryTag.EVENT_ID, event.id.toString())
+        }
 
         if (oldEventId != event.id) {
             val stripeProvider = CommonApp.stripeProvider

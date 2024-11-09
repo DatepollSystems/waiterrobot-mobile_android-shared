@@ -1,5 +1,8 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type
+import org.jetbrains.kotlin.gradle.plugin.mpp.Framework
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBinary
+import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -37,6 +40,7 @@ kotlin {
             // Must be set to false for shared localization (otherwise resources are not available)
             isStatic = false
             freeCompilerArgs += "-Xobjc-generics"
+            export(libs.sentry)
         }
     }
 
@@ -91,6 +95,8 @@ kotlin {
                 api(libs.kotlinx.datetime)
                 // Also needed by android for ComposeDestination parameter serialization
                 api(libs.kotlinx.serialization.json)
+
+                api(libs.sentry)
             }
         }
         commonTest {
@@ -178,12 +184,40 @@ tasks {
     }
 
     afterEvaluate {
+        // Link the Sentry framework to the iOS targets
+        val action = Action<KotlinNativeTarget> target@{
+            val frameworkArchitecture = when (name) {
+                "iosSimulatorArm64", "iosX64" -> "ios-arm64_x86_64-simulator"
+                "iosArm64" -> "ios-arm64"
+                else -> {
+                    logger.warn("Skipping linking of Sentry for target $name - unsupported architecture.")
+                    return@target
+                }
+            }
+
+            val frameworkPath =
+                project.file("Sentry-Dynamic.xcframework/$frameworkArchitecture").absolutePath
+            val action = Action<NativeBinary> binary@{
+                if (this is TestExecutable) {
+                    linkerOpts("-rpath", frameworkPath, "-F$frameworkPath")
+                }
+
+                if (this is Framework) {
+                    linkerOpts("-F$frameworkPath")
+                    logger.info("Linked framework for target ${this@target.name} from $frameworkPath")
+                }
+            }
+            binaries.all(action)
+        }
+        kotlin.targets.withType<KotlinNativeTarget>()
+            .matching { it.konanTarget.family.isAppleFamily }
+            .all(action)
+
         // Copy the generated iOS localizations to the framework and set some task dependencies
         listOf("Release", "Debug").forEach { buildType ->
             named("assembleShared${buildType}XCFramework") {
                 dependsOn(generateLocalizationsTask)
                 doLast {
-                    // TODO can we get this names from somewhere?
                     listOf("ios-arm64", "ios-arm64_x86_64-simulator").forEach { arch ->
                         copy {
                             from("$generatedLocalizationRoot/commonMain/resources/ios")

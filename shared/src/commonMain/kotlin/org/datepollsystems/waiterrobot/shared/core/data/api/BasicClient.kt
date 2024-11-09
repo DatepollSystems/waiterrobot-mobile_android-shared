@@ -12,6 +12,7 @@ import io.ktor.client.request.header
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
+import org.datepollsystems.waiterrobot.shared.core.sentry.SentryKtorBreadcrumbsPlugin
 import io.ktor.client.plugins.logging.Logger as KtorLogger
 
 internal fun createBasicClient(
@@ -48,6 +49,8 @@ internal fun HttpClientConfig<*>.commonConfig(
             level = LogLevel.ALL
         }
     }
+
+    install(SentryKtorBreadcrumbsPlugin)
 
     defaultRequest {
         header("X-App-Version", CommonApp.appInfo.appVersion)
