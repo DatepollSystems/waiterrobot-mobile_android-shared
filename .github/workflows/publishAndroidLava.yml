@@ -66,4 +66,27 @@ jobs:
           git tag ${{ env.VERSION_TAG }}
           git push origin ${{ env.VERSION_TAG }}
 
-      # TODO send a notification?
+      - name: Slack notification
+        run: |
+          curl -X POST \
+          --header 'Content-type: application/json' \
+          --url '${{ secrets.SLACK_WEB_HOOK_URL }}' \
+          --data '{
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "🚀 New Android lava version available",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Version:* `'${{ env.VERSION_TAG }}'`"
+                }
+              }
+            ]
+          }'

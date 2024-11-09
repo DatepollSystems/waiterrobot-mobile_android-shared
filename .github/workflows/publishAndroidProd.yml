@@ -58,4 +58,27 @@ jobs:
           prerelease: true # As the release is not yet available on the Play Store
           generate_release_notes: true
 
-      # TODO add notification?
+      - name: Slack notification
+        run: |
+          curl -X POST \
+          --header 'Content-type: application/json' \
+          --url '${{ secrets.SLACK_WEB_HOOK_URL }}' \
+          --data '{
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "🚀 New Android pre release available",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Version:* `'${{ env.VERSION_TAG }}'`"
+                }
+              }
+            ]
+          }'
