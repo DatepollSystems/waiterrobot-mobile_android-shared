@@ -51,6 +51,7 @@ jobs:
           echo "VERSION_TAG=android/${ANDROID_VERSION}" >> $GITHUB_ENV
 
       - name: Create GitHub Release
+        id: create_gh_release
         uses: softprops/action-gh-release@v2
         with:
           name: Android ${{ env.ANDROID_VERSION }}
@@ -78,6 +79,13 @@ jobs:
                 "text": {
                   "type": "mrkdwn",
                   "text": "*Version:* `'${{ env.VERSION_TAG }}'`"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<${{ steps.create_gh_release.outputs.url }}|See what's new>"
                 }
               }
             ]
