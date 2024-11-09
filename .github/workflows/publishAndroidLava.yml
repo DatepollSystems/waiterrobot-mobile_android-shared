@@ -85,7 +85,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*Version:* `'${{ env.VERSION_TAG }}'`"
+                  "text": "*Version:* `'${{ env.ANDROID_VERSION }}'`"
                 }
               }
             ]
