@@ -1,21 +1,21 @@
 [versions]
 # Shared
-kotlin = "1.9.24" # Always check https://developer.android.com/jetpack/androidx/releases/compose-kotlin for compose version compatibility
-ksp = "1.9.24-1.0.20" # First part must match the kotlin version
+kotlin = "2.1.10" # Always check https://developer.android.com/jetpack/androidx/releases/compose-kotlin for compose version compatibility
+ksp = "2.1.10-1.0.30" # First part must match the kotlin version
 kermit = "2.0.3"
-koin = "3.5.6"
-orbitMvi = "8.0.0"
+koin = "4.0.2"
+orbitMvi = "9.0.0"
 mokoMvvm = "0.16.1"
-ktor = "2.3.11"
+ktor = "3.1.0"
 mokoPermissions = "0.18.0"
 settings = "1.1.1"
-realm = "1.16.0"
+realm = "3.0.0"
 detekt = "1.23.6"
 kotlinx-serialization-json = "1.6.3"
 kotlinx-datetime = "0.6.0"
 buildkonfig = "0.15.1"
 skie = "0.8.2"
-kmmbridge = "0.5.5"
+kmmbridge = "1.2.1"
 kmmresources = "1.0.0-alpha11"
 
 # When updating also update the "Sentry-Dynamic.xcframework" in the shared folder to a required/supported version (see Info.plist for curent version)
@@ -36,16 +36,16 @@ android-camera = "1.3.4"
 android-desugar = "2.0.4"
 androidx-lifecycle = "2.7.0"
 androidx-appcompat = "1.6.1"
-androidx-compose = "2024.06.00"
+androidx-compose = "2025.02.00"
 androidx-compose-compiler = "1.5.14"
 androidx-compose-activity = "1.9.0"
 compose-destinations = "1.10.2"
 play-publisher = "3.9.1"
 accompanistPermissions = "0.34.0"
-koinCompose = "3.5.6"
+koinCompose = "4.0.2"
 appUpdate = "2.1.0"
 barcodeScanning = "17.2.0"
-stripe = "3.5.0"
+stripe = "4.1.0"
 playServicesLocation = "21.3.0"
 
 [libraries]
