@@ -1,13 +1,14 @@
 package org.datepollsystems.waiterrobot.shared.features.billing.viewmodel
 
+import kotlinx.coroutines.launch
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
+import org.datepollsystems.waiterrobot.shared.core.data.Resource
 import org.datepollsystems.waiterrobot.shared.core.data.api.ApiException
-import org.datepollsystems.waiterrobot.shared.core.navigation.NavOrViewModelEffect
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.AbstractViewModel
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.DialogState
-import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 import org.datepollsystems.waiterrobot.shared.features.billing.api.models.PayBillRequestDto
-import org.datepollsystems.waiterrobot.shared.features.billing.repository.BillingRepository
+import org.datepollsystems.waiterrobot.shared.features.billing.models.BillItem
+import org.datepollsystems.waiterrobot.shared.features.billing.repository.BillingRepositoryImpl
 import org.datepollsystems.waiterrobot.shared.features.billing.repository.GeoLocationDisabledException
 import org.datepollsystems.waiterrobot.shared.features.billing.repository.NfcDisabledException
 import org.datepollsystems.waiterrobot.shared.features.billing.repository.PaymentCanceledException
@@ -15,7 +16,7 @@ import org.datepollsystems.waiterrobot.shared.features.billing.repository.Stripe
 import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.ChangeBreakUp.Companion.breakDown
 import org.datepollsystems.waiterrobot.shared.features.stripe.api.StripeApi
 import org.datepollsystems.waiterrobot.shared.features.stripe.api.models.PaymentIntent
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.desc
 import org.datepollsystems.waiterrobot.shared.generated.localization.locationDisabled
@@ -23,31 +24,48 @@ import org.datepollsystems.waiterrobot.shared.generated.localization.nfcDisabled
 import org.datepollsystems.waiterrobot.shared.generated.localization.success
 import org.datepollsystems.waiterrobot.shared.generated.localization.title
 import org.datepollsystems.waiterrobot.shared.utils.euro
-import org.orbitmvi.orbit.annotation.OrbitExperimental
-import org.orbitmvi.orbit.syntax.simple.SimpleSyntax
+import org.datepollsystems.waiterrobot.shared.utils.extensions.runCatchingCancelable
+import org.datepollsystems.waiterrobot.shared.utils.getLocalizedUserMessage
 import org.orbitmvi.orbit.syntax.simple.blockingIntent
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.syntax.simple.repeatOnSubscription
+import org.orbitmvi.orbit.syntax.simple.subIntent
 
 @Suppress("TooManyFunctions")
 class BillingViewModel internal constructor(
-    private val billingRepository: BillingRepository,
+    private val billingRepository: BillingRepositoryImpl,
     private val stripeApi: StripeApi,
     private val table: Table
 ) : AbstractViewModel<BillingState, BillingEffect>(BillingState()) {
 
-    override suspend fun SimpleSyntax<BillingState, NavOrViewModelEffect<BillingEffect>>.onCreate() {
-        loadBill()
+    override suspend fun onCreate() = subIntent {
+        repeatOnSubscription {
+            launch { refreshBillInternal() }
+        }
     }
 
-    fun loadBill() = intent {
-        reduce { state.withViewState(viewState = ViewState.Loading) }
-        val items = billingRepository.getBillForTable(
-            table = table,
-            selectAll = CommonApp.settings.paymentSelectAllProductsByDefault
-        ).associateBy { it.virtualId }
+    override suspend fun onUnhandledException(exception: Throwable) {
+        TODO("Not yet implemented")
+    }
 
-        reduce { state.copy(_billItems = items, viewState = ViewState.Idle) }
+    fun refreshBill() = intent { refreshBillInternal() }
+
+    private suspend fun refreshBillInternal() = subIntent {
+        reduce { state.copy(_billItems = state._billItems.loading()) }
+        billingRepository.getBillForTable(
+            table,
+            CommonApp.settings.paymentSelectAllProductsByDefault
+        ).onSuccess {
+            reduce { state.copy(_billItems = Resource.Success(it), paymentState = null) }
+        }.onFailure { e ->
+            reduce {
+                state.copy(
+                    _billItems = Resource.Error(e, state._billItems.data),
+                    paymentState = null
+                )
+            }
+        }
     }
 
     fun paySelection(paymentSheetShown: Boolean = false) = intent {
@@ -56,31 +74,60 @@ class BillingViewModel internal constructor(
             return@intent
         }
 
-        reduce { state.withViewState(viewState = ViewState.Loading) }
+        reduce { state.copy(paymentState = BillingState.PaymentState.Loading) }
 
-        try {
-            val newBillItems = billingRepository.payBill(
-                table = table,
-                items = state.billItems.filter { it.selectedForBill > 0 },
-                selectAll = CommonApp.settings.paymentSelectAllProductsByDefault
-            )
-
+        val selectedItems = state.billItems.data?.filter { it.selectedForBill > 0 } ?: emptyList()
+        billingRepository.payBill(
+            table = table,
+            items = selectedItems,
+            selectAll = CommonApp.settings.paymentSelectAllProductsByDefault
+        ).onSuccess {
             reduce {
                 state.copy(
-                    viewState = ViewState.Idle,
-                    _billItems = newBillItems.associateBy { it.virtualId },
+                    _billItems = Resource.Success(it),
                     change = null,
-                    moneyGivenText = ""
+                    paymentState = BillingState.PaymentState.Success
                 )
             }
-        } catch (_: ApiException.BillProductsAlreadyPayed) {
-            logger.i("Some products have already been payed.")
-            reduceError(
-                L.billing.productsAlreadyPayed.title(),
-                L.billing.productsAlreadyPayed.desc(),
-                dismiss = ::loadBill
-            )
+        }.onFailure { e ->
+            when (e) {
+                is ApiException.BillProductsAlreadyPayed -> {
+                    logger.i("Some products have already been payed.")
+                    reduce {
+                        state.copy(
+                            paymentState = BillingState.PaymentState.Error(
+                                DialogState(
+                                    L.billing.productsAlreadyPayed.title(),
+                                    L.billing.productsAlreadyPayed.desc(),
+                                    primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                                    onDismiss = ::dismissPaymentState
+                                )
+                            )
+                        )
+                    }
+                }
+
+                else -> {
+                    logger.e("Failed to pay bill", e)
+                    reduce {
+                        state.copy(
+                            paymentState = BillingState.PaymentState.Error(
+                                DialogState(
+                                    title = L.exceptions.title(),
+                                    text = e.getLocalizedUserMessage(),
+                                    primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                                    onDismiss = ::dismissPaymentState
+                                )
+                            )
+                        )
+                    }
+                }
+            }
         }
+    }
+
+    private fun dismissPaymentState() = intent {
+        reduce { state.copy(paymentState = null) }
     }
 
     fun initiateContactLessPayment() = intent {
@@ -95,21 +142,33 @@ class BillingViewModel internal constructor(
             return@intent
         }
 
-        reduce { state.withViewState(viewState = ViewState.Loading) }
+        reduce { state.copy(paymentState = BillingState.PaymentState.Loading) }
 
-        val paymentIntent = stripeApi.createPaymentIntent(
-            PayBillRequestDto(
-                tableId = table.id,
-                state.billItems.flatMap {
-                    it.orderProductIds.take(it.selectedForBill)
-                }
-            )
-        )
+        val items = state._billItems.data?.values?.flatMap {
+            it.orderProductIds.take(it.selectedForBill)
+        } ?: emptyList()
 
-        collectPayment(stripeProvider, paymentIntent)
+        runCatchingCancelable {
+            stripeApi.createPaymentIntent(PayBillRequestDto(table.id, items))
+        }.onSuccess {
+            collectPayment(stripeProvider, it)
+        }.onFailure { e ->
+            logger.e(e) { "Failed to initiate contactless payment" }
+            reduce {
+                state.copy(
+                    paymentState = BillingState.PaymentState.Error(
+                        DialogState(
+                            title = L.exceptions.title(),
+                            text = e.getLocalizedUserMessage(),
+                            primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                            onDismiss = ::dismissPaymentState
+                        )
+                    )
+                )
+            }
+        }
     }
 
-    @OptIn(OrbitExperimental::class)
     fun moneyGiven(moneyGiven: String) = blockingIntent {
         if (!moneyGiven.matches(Regex("""^(\d+([.,]\d{0,2})?)?$"""))) return@blockingIntent
         val givenText = moneyGiven.replace(",", ".")
@@ -149,21 +208,21 @@ class BillingViewModel internal constructor(
         }
     }
 
-    fun addItem(virtualId: Long, amount: Int) = intent {
+    fun addItem(baseProductId: Long, amount: Int) = intent {
         reduce {
-            val item = state._billItems[virtualId]
+            val item = state._billItems.data?.get(baseProductId)
 
             if (item == null) {
-                logger.e("Tried to add product with id '$virtualId' but could not find the product on the bill.")
+                logger.e("Tried to add product with id '$baseProductId' but could not find the product on the bill.")
                 return@reduce state
             }
 
             val newAmount = (item.selectedForBill + amount).coerceIn(0..item.ordered)
 
             val newItem = item.copy(selectedForBill = newAmount)
-            val newBill = state._billItems.plus(newItem.virtualId to newItem)
+            val newBill = state._billItems.data!!.plus(newItem.baseProductId to newItem)
             state.copy(
-                _billItems = newBill,
+                _billItems = state._billItems.internalCopy(newBill),
                 moneyGivenText = "",
                 change = null
             )
@@ -172,11 +231,12 @@ class BillingViewModel internal constructor(
 
     fun selectAll() = intent {
         reduce {
-            val newBill = state._billItems.mapValues {
+            val data = state._billItems.data ?: return@reduce state
+            val newBill = data.mapValues {
                 it.value.copy(selectedForBill = it.value.ordered)
             }
             state.copy(
-                _billItems = newBill,
+                _billItems = state._billItems.internalCopy(newBill),
                 moneyGivenText = "",
                 change = null
             )
@@ -185,9 +245,10 @@ class BillingViewModel internal constructor(
 
     fun unselectAll() = intent {
         reduce {
-            val newBill = state._billItems.mapValues { it.value.copy(selectedForBill = 0) }
+            val data = state._billItems.data ?: return@reduce state
+            val newBill = data.mapValues { it.value.copy(selectedForBill = 0) }
             state.copy(
-                _billItems = newBill,
+                _billItems = state._billItems.internalCopy(newBill),
                 moneyGivenText = "",
                 change = null
             )
@@ -198,7 +259,10 @@ class BillingViewModel internal constructor(
         navigator.pop()
     }
 
-    private fun collectPayment(stripeProvider: StripeProvider, paymentIntent: PaymentIntent) {
+    private suspend fun collectPayment(
+        stripeProvider: StripeProvider,
+        paymentIntent: PaymentIntent
+    ) {
         fun Throwable.getDialogTitle(): String = when (this) {
             is PaymentCanceledException -> L.billing.stripe.canceled.title()
             else -> L.billing.stripe.failed.title()
@@ -211,10 +275,10 @@ class BillingViewModel internal constructor(
             else -> L.billing.stripe.failed.desc()
         }
 
-        intent {
-            reduce { state.copy(paymentErrorDialog = null) }
+        subIntent {
+            reduce { state.copy(paymentState = BillingState.PaymentState.Loading) }
 
-            runCatching {
+            runCatchingCancelable {
                 stripeProvider.collectPayment(paymentIntent)
             }.onFailure { error ->
                 when (error) {
@@ -229,40 +293,65 @@ class BillingViewModel internal constructor(
 
                 reduce {
                     state.copy(
-                        paymentErrorDialog = DialogState(
-                            title = error.getDialogTitle(),
-                            text = error.getDialogText(),
-                            onDismiss = {
-                                cancelPayment(paymentIntent)
-                            },
-                            primaryButton = DialogState.Button("OK") {
-                                cancelPayment(paymentIntent)
-                            },
-                            secondaryButton = DialogState.Button("Retry") {
-                                logger.i("Retrying card payment (${paymentIntent.id})")
-                                collectPayment(stripeProvider, paymentIntent)
-                            }
+                        paymentState = BillingState.PaymentState.Error(
+                            DialogState(
+                                title = error.getDialogTitle(),
+                                text = error.getDialogText(),
+                                onDismiss = {
+                                    cancelPayment(paymentIntent)
+                                },
+                                primaryButton = DialogState.Button("OK") {
+                                    cancelPayment(paymentIntent)
+                                },
+                                secondaryButton = DialogState.Button("Retry") {
+                                    logger.i("Retrying card payment (${paymentIntent.id})")
+                                    intent { collectPayment(stripeProvider, paymentIntent) }
+                                }
+                            )
                         )
                     )
                 }
             }.onSuccess {
                 postSideEffect(BillingEffect.Toast(L.billing.stripe.success()))
-                loadBill()
+                refreshBillInternal()
             }
         }
     }
 
     private fun cancelPayment(paymentIntent: PaymentIntent) = intent {
-        reduce { state.copy(paymentErrorDialog = null, viewState = ViewState.Loading) }
-        val newBillItems = stripeApi.cancelPaymentIntent(paymentIntent)
-            .getBillItems(selectAllForBill = CommonApp.settings.paymentSelectAllProductsByDefault)
         reduce {
             state.copy(
-                viewState = ViewState.Idle,
-                _billItems = newBillItems.associateBy { it.virtualId },
-                change = null,
-                moneyGivenText = ""
+                paymentState = null,
+                _billItems = state._billItems.loading()
             )
+        }
+
+        runCatchingCancelable {
+            stripeApi.cancelPaymentIntent(paymentIntent)
+                .getBillItems(selectAllForBill = CommonApp.settings.paymentSelectAllProductsByDefault)
+                .associateBy(BillItem::baseProductId)
+        }.onSuccess {
+            reduce {
+                state.copy(
+                    _billItems = Resource.Success(it),
+                    change = null,
+                    moneyGivenText = ""
+                )
+            }
+        }.onFailure { e ->
+            logger.e("Failed to cancel payment", e)
+            reduce {
+                state.copy(
+                    paymentState = BillingState.PaymentState.Error(
+                        DialogState(
+                            title = L.exceptions.title(),
+                            text = e.getLocalizedUserMessage(),
+                            primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                            onDismiss = ::dismissPaymentState
+                        )
+                    )
+                )
+            }
         }
     }
 }

@@ -47,8 +47,8 @@ import org.datepollsystems.waiterrobot.android.util.desaturateOnDarkMode
 import org.datepollsystems.waiterrobot.android.util.getContentColor
 import org.datepollsystems.waiterrobot.android.util.toColor
 import org.datepollsystems.waiterrobot.shared.core.data.Resource
-import org.datepollsystems.waiterrobot.shared.features.order.models.Product
-import org.datepollsystems.waiterrobot.shared.features.order.models.ProductGroup
+import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Product
+import org.datepollsystems.waiterrobot.shared.features.order.domain.model.ProductGroup
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.allGroups
 import org.datepollsystems.waiterrobot.shared.generated.localization.noProductFound

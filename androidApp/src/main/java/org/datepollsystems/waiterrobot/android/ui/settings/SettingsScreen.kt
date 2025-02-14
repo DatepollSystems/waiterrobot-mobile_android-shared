@@ -131,7 +131,6 @@ fun SettingsScreen(
     }
 
     ScaffoldView(
-        state = state,
         title = L.settings.title(),
         topBarActions = {
             IconButton(onClick = { showLogoutWarningDialog = true }) {

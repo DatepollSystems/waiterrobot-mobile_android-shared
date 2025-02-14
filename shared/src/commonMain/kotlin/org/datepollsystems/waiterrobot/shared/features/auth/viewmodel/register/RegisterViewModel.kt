@@ -16,18 +16,32 @@ class RegisterViewModel internal constructor(
 ) : AbstractViewModel<RegisterState, RegisterEffect>(RegisterState()) {
 
     fun onRegister(name: String, registerLink: DeepLink.Auth.RegisterLink) = intent {
-        reduce { state.withViewState(ViewState.Loading) }
+        reduce { state.copy(viewState = ViewState.Loading) }
         try {
             // TODO check name
             authRepository.createWaiter(registerLink, name)
-            reduce { state.withViewState(ViewState.Idle) }
+            reduce { state.copy(viewState = ViewState.Idle) }
         } catch (_: ApiException.CredentialsIncorrect) {
-            reduceError(L.login.invalidCode.title(), L.login.invalidCode.desc())
+            reduce {
+                state.copy(
+                    viewState = ViewState.Error(
+                        L.login.invalidCode.title(),
+                        L.login.invalidCode.desc(),
+                        onDismiss = {
+                            intent { reduce { state.copy(viewState = ViewState.Idle) } }
+                        }
+                    )
+                )
+            }
         }
     }
 
     fun cancel() = intent {
         // TODO confirm?
         navigator.pop()
+    }
+
+    override suspend fun onUnhandledException(exception: Throwable) {
+        TODO("Not yet implemented")
     }
 }

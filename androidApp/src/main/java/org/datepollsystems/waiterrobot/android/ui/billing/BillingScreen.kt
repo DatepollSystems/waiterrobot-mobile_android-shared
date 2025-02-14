@@ -38,8 +38,9 @@ import org.datepollsystems.waiterrobot.android.ui.core.ConfirmDialog
 import org.datepollsystems.waiterrobot.android.ui.core.handleSideEffects
 import org.datepollsystems.waiterrobot.android.ui.core.view.ScaffoldView
 import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.BillingEffect
+import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.BillingState
 import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.BillingViewModel
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.closeAnyway
 import org.datepollsystems.waiterrobot.shared.generated.localization.desc
@@ -96,10 +97,12 @@ fun BillingScreen(
         )
     }
 
-    AlertDialogFromState(state.paymentErrorDialog)
+    when (val paymentState = state.paymentState) {
+        is BillingState.PaymentState.Error -> AlertDialogFromState(paymentState.dialog)
+        else -> Unit
+    }
 
     ScaffoldView(
-        state = state,
         title = L.billing.title(table.groupName, table.number.toString()),
         navigationIcon = {
             IconButton(onClick = ::goBack) {
@@ -188,6 +191,11 @@ fun BillingScreen(
             }
         }
     ) {
-        BillList(table = table, billItems = state.billItems, addAction = vm::addItem)
+        // TODO: Add a loading view
+        BillList(
+            table = table,
+            billItems = state.billItems.data ?: emptyList(),
+            addAction = vm::addItem
+        )
     }
 }

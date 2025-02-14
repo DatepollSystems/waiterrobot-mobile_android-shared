@@ -9,7 +9,5 @@ data class RootState(
     val selectedTheme: AppTheme = CommonApp.appTheme.value,
     val isLoggedIn: Boolean = CommonApp.isLoggedIn.value,
     val eventSelected: Boolean = CommonApp.selectedEvent.value != null,
-    override val viewState: ViewState = ViewState.Idle
-) : ViewModelState() {
-    override fun withViewState(viewState: ViewState): RootState = copy(viewState = viewState)
-}
+    val viewState: ViewState = ViewState.Idle
+) : ViewModelState

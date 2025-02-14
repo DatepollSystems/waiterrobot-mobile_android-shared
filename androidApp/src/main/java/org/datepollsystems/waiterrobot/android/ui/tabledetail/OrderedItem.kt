@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.datepollsystems.waiterrobot.shared.features.table.models.OrderedItem
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.OrderedItem
 
 @Composable
 fun OrderedItem(item: OrderedItem, onClick: () -> Unit) {

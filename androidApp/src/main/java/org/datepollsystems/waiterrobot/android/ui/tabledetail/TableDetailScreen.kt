@@ -34,9 +34,9 @@ import org.datepollsystems.waiterrobot.android.ui.core.handleSideEffects
 import org.datepollsystems.waiterrobot.android.ui.core.view.LoadingView
 import org.datepollsystems.waiterrobot.android.ui.core.view.RefreshableView
 import org.datepollsystems.waiterrobot.shared.core.data.Resource
-import org.datepollsystems.waiterrobot.shared.features.table.models.OrderedItem
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
-import org.datepollsystems.waiterrobot.shared.features.table.viewmodel.detail.TableDetailViewModel
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.OrderedItem
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
+import org.datepollsystems.waiterrobot.shared.features.table.presentation.detail.TableDetailViewModel
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.newOrder
 import org.datepollsystems.waiterrobot.shared.generated.localization.noOrder
@@ -70,7 +70,7 @@ fun TableDetailScreen(
         },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
-                if (!state.orderedItemsResource.data.isNullOrEmpty()) {
+                if (!state.orderedItems.data.isNullOrEmpty()) {
                     FloatingActionButton(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         onClick = vm::openBillingScreen
@@ -94,15 +94,15 @@ fun TableDetailScreen(
     ) {
         RefreshableView(
             modifier = Modifier.padding(it),
-            loading = state.orderedItemsResource is Resource.Loading && state.orderedItemsResource.data != null,
+            loading = state.orderedItems is Resource.Loading && state.orderedItems.data != null,
             onRefresh = vm::refreshOrder,
         ) {
-            if (state.orderedItemsResource is Resource.Loading && state.orderedItemsResource.data == null) {
+            if (state.orderedItems is Resource.Loading && state.orderedItems.data == null) {
                 LoadingView()
             } else {
                 Column {
-                    val res = state.orderedItemsResource
-                    val orderedItems = state.orderedItemsResource.data
+                    val res = state.orderedItems
+                    val orderedItems = state.orderedItems.data
 
                     if (res is Resource.Error) {
                         ErrorBar(message = res.userMessage, retryAction = vm::refreshOrder)

@@ -16,7 +16,7 @@ import org.datepollsystems.waiterrobot.android.ui.common.CenteredText
 import org.datepollsystems.waiterrobot.android.ui.common.SwipeableListItem
 import org.datepollsystems.waiterrobot.android.ui.core.Preview
 import org.datepollsystems.waiterrobot.shared.features.billing.models.BillItem
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.noOpenBill
 import org.datepollsystems.waiterrobot.shared.utils.euro
@@ -38,7 +38,7 @@ fun BillList(
                 LazyColumn(
                     modifier = Modifier.weight(1f)
                 ) {
-                    items(billItems, key = BillItem::virtualId) { billItem ->
+                    items(billItems, key = BillItem::baseProductId) { billItem ->
                         BillListItem(
                             item = billItem,
                             addAction = addAction
@@ -57,9 +57,9 @@ private fun BillListItem(
     addAction: (id: Long, amount: Int) -> Unit
 ) = SwipeableListItem(
     modifier = modifier,
-    swipeAdd = { addAction(item.virtualId, 1) },
-    swipeRemove = { addAction(item.virtualId, -1) },
-    onClick = { addAction(item.virtualId, 1) }
+    swipeAdd = { addAction(item.baseProductId, 1) },
+    swipeRemove = { addAction(item.baseProductId, -1) },
+    onClick = { addAction(item.baseProductId, 1) }
 ) {
     Text(
         modifier = Modifier.weight(0.2f),

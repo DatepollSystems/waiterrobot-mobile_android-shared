@@ -1,7 +1,7 @@
 package org.datepollsystems.waiterrobot.shared.core.navigation
 
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewModelEffect
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.utils.DeepLink
 
 sealed class Screen {

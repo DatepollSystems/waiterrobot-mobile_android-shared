@@ -12,7 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.datepollsystems.waiterrobot.android.ui.core.LocalSnackbarHostState
-import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewModelState
+import org.datepollsystems.waiterrobot.shared.core.viewmodel.StateWithViewState
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 
 /**
@@ -25,7 +25,7 @@ import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
  */
 @Composable
 fun View(
-    state: ViewModelState,
+    state: StateWithViewState,
     modifier: Modifier = Modifier,
     onRefresh: (() -> Unit)? = null,
     content: @Composable () -> Unit
@@ -56,7 +56,7 @@ fun View(
  */
 @Composable
 fun View(
-    state: ViewModelState,
+    state: StateWithViewState,
     paddingValues: PaddingValues,
     onRefresh: (() -> Unit)? = null,
     content: @Composable () -> Unit
@@ -64,7 +64,7 @@ fun View(
 
 @Composable
 fun ScaffoldView(
-    state: ViewModelState,
+    state: StateWithViewState,
     snackbarHostState: SnackbarHostState = LocalSnackbarHostState.current,
     title: String,
     topBarActions: @Composable RowScope.() -> Unit = {},
@@ -89,5 +89,33 @@ fun ScaffoldView(
     floatingActionButtonPosition = floatingActionButtonPosition,
 ) {
     View(state = state, paddingValues = it, onRefresh = onRefresh, content = content)
+    bottomSheet?.invoke()
+}
+
+@Composable
+fun ScaffoldView(
+    snackbarHostState: SnackbarHostState = LocalSnackbarHostState.current,
+    title: String,
+    topBarActions: @Composable RowScope.() -> Unit = {},
+    navigationIcon: @Composable () -> Unit = {},
+    bottomBar: @Composable () -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    bottomSheet: @Composable (() -> Unit)? = null,
+    content: @Composable (PaddingValues) -> Unit
+) = Scaffold(
+    snackbarHost = { SnackbarHost(snackbarHostState) },
+    topBar = {
+        TopAppBar(
+            title = { Text(title) },
+            actions = topBarActions,
+            navigationIcon = navigationIcon
+        )
+    },
+    bottomBar = bottomBar,
+    floatingActionButton = floatingActionButton,
+    floatingActionButtonPosition = floatingActionButtonPosition,
+) {
+    content(it)
     bottomSheet?.invoke()
 }

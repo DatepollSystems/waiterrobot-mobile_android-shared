@@ -38,6 +38,9 @@ dialog:
   off:
     en: Off
     de: Aus
+  ok:
+    en: OK
+    de: OK
 deepLink:
   invalid:
     en: Invalid link.

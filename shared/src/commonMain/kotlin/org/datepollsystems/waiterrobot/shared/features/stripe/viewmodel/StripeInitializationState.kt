@@ -1,7 +1,6 @@
 package org.datepollsystems.waiterrobot.shared.features.stripe.viewmodel
 
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewModelState
-import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.disabledForEvent
 import org.datepollsystems.waiterrobot.shared.generated.localization.locationPermissionDenied
@@ -12,9 +11,7 @@ data class StripeInitializationState(
     val step: Step = Step.Start,
     val stepIndex: Int = 1,
     val isLoading: Boolean = false,
-    @Deprecated("Legacy - Not used anymore")
-    override val viewState: ViewState = ViewState.Idle,
-) : ViewModelState() {
+) : ViewModelState {
 
     sealed class Step {
         data object Start : Step()
@@ -39,7 +36,4 @@ data class StripeInitializationState(
             const val COUNT: Float = 6f
         }
     }
-
-    @Deprecated("Legacy - Not used anymore")
-    override fun withViewState(viewState: ViewState): ViewModelState = copy(viewState = viewState)
 }

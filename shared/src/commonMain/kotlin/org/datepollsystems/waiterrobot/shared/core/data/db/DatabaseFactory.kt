@@ -3,20 +3,20 @@ package org.datepollsystems.waiterrobot.shared.core.data.db
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.types.RealmObject
-import org.datepollsystems.waiterrobot.shared.features.order.db.model.AllergenEntry
-import org.datepollsystems.waiterrobot.shared.features.order.db.model.ProductEntry
-import org.datepollsystems.waiterrobot.shared.features.order.db.model.ProductGroupEntry
-import org.datepollsystems.waiterrobot.shared.features.table.db.model.TableEntry
-import org.datepollsystems.waiterrobot.shared.features.table.db.model.TableGroupEntry
+import org.datepollsystems.waiterrobot.shared.features.order.data.local.entity.AllergenEntity
+import org.datepollsystems.waiterrobot.shared.features.order.data.local.entity.ProductEntity
+import org.datepollsystems.waiterrobot.shared.features.order.data.local.entity.ProductGroupEntity
+import org.datepollsystems.waiterrobot.shared.features.table.data.local.entity.TableEntity
+import org.datepollsystems.waiterrobot.shared.features.table.data.local.entity.TableGroupEntity
 import kotlin.reflect.KClass
 
 fun createRealmDB(): Realm {
     val schema: Set<KClass<out RealmObject>> = setOf(
-        TableGroupEntry::class,
-        TableEntry::class,
-        ProductGroupEntry::class,
-        ProductEntry::class,
-        AllergenEntry::class,
+        TableGroupEntity::class,
+        TableEntity::class,
+        ProductGroupEntity::class,
+        ProductEntity::class,
+        AllergenEntity::class,
     )
 
     @Suppress("MagicNumber")

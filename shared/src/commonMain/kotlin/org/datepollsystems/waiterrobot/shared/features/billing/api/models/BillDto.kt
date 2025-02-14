@@ -23,19 +23,26 @@ internal class BillResponseDto(
     )
 
     fun getBillItems(selectAllForBill: Boolean): List<BillItem> {
-        return implodedOrderProducts.mapNotNull {
+        return implodedOrderProducts.fold(mapOf<Long, BillItem>()) { map, billItem ->
             // Safeguard
-            if (it.orderProductIds.isEmpty()) return@mapNotNull null
+            if (billItem.orderProductIds.isEmpty()) return@fold map
 
-            BillItem(
-                baseProductId = it.baseProductId,
-                name = it.name,
-                ordered = it.amount,
-                selectedForBill = if (selectAllForBill) it.amount else 0,
-                pricePerPiece = it.pricePerPiece.cent,
-                orderProductIds = it.orderProductIds
+            val existingBillItem = map[billItem.baseProductId]
+            val newItem = existingBillItem?.copy(
+                ordered = existingBillItem.ordered + billItem.amount,
+                orderProductIds = existingBillItem.orderProductIds + billItem.orderProductIds,
+                selectedForBill = existingBillItem.selectedForBill + if (selectAllForBill) billItem.amount else 0,
+            ) ?: BillItem(
+                baseProductId = billItem.baseProductId,
+                name = billItem.name,
+                ordered = billItem.amount,
+                selectedForBill = if (selectAllForBill) billItem.amount else 0,
+                pricePerPiece = billItem.pricePerPiece.cent,
+                orderProductIds = billItem.orderProductIds,
             )
-        }
+
+            map + (billItem.baseProductId to newItem)
+        }.values.toList()
     }
 }
 

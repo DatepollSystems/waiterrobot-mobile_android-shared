@@ -34,15 +34,15 @@ import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import kotlinx.coroutines.launch
 import org.datepollsystems.waiterrobot.android.ui.common.CenteredText
+import org.datepollsystems.waiterrobot.android.ui.core.AlertDialogFromState
 import org.datepollsystems.waiterrobot.android.ui.core.ConfirmDialog
-import org.datepollsystems.waiterrobot.android.ui.core.ErrorBar
 import org.datepollsystems.waiterrobot.android.ui.core.handleSideEffects
-import org.datepollsystems.waiterrobot.android.ui.core.view.LoadingView
+import org.datepollsystems.waiterrobot.android.ui.core.view.LoadingOverlay
 import org.datepollsystems.waiterrobot.android.ui.core.view.ScaffoldView
-import org.datepollsystems.waiterrobot.shared.core.data.Resource
-import org.datepollsystems.waiterrobot.shared.features.order.models.OrderItem
+import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
+import org.datepollsystems.waiterrobot.shared.features.order.domain.model.OrderItem
 import org.datepollsystems.waiterrobot.shared.features.order.viewmodel.OrderViewModel
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.addProduct
 import org.datepollsystems.waiterrobot.shared.generated.localization.closeAnyway
@@ -81,7 +81,7 @@ fun OrderScreen(
 
     fun goBack() {
         when {
-            state.currentOrder.data.orEmpty().isNotEmpty() -> showConfirmGoBack = true
+            state.currentOrder.isNotEmpty() -> showConfirmGoBack = true
             else -> vm.abortOrder()
         }
     }
@@ -111,7 +111,6 @@ fun OrderScreen(
     }
 
     ScaffoldView(
-        state = state,
         title = L.order.title(table.groupName, table.number.toString()),
         navigationIcon = {
             IconButton(onClick = ::goBack) {
@@ -120,7 +119,7 @@ fun OrderScreen(
         },
         floatingActionButton = {
             Column(horizontalAlignment = Alignment.End) {
-                if (state.currentOrder.data.orEmpty().isNotEmpty()) {
+                if (state.currentOrder.isNotEmpty()) {
                     FloatingActionButton(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         onClick = vm::sendOrder
@@ -159,7 +158,7 @@ fun OrderScreen(
                         close = {
                             focusManager.clearFocus()
                             when {
-                                state.currentOrder.data.isNullOrEmpty() -> vm.abortOrder()
+                                state.currentOrder.isEmpty() -> vm.abortOrder()
                                 else -> {
                                     coroutineScope.launch { productSheetState.hide() }
                                         .invokeOnCompletion { showProductSheet = false }
@@ -172,18 +171,13 @@ fun OrderScreen(
             }
         }
     ) {
-        val orderResource = state.currentOrder
-        val orderItems = orderResource.data
+        AlertDialogFromState(state.orderingState)
 
-        if (orderResource is Resource.Loading && orderItems == null) {
-            LoadingView()
-        } else {
+        LoadingOverlay(
+            isLoading = state.orderingState == ViewState.Loading,
+        ) {
             Column {
-                if (orderResource is Resource.Error) {
-                    ErrorBar(message = orderResource.userMessage) // TODO retry action (not always the same)
-                }
-
-                if (orderItems.isNullOrEmpty()) {
+                if (state.currentOrder.isEmpty()) {
                     CenteredText(
                         modifier = Modifier.weight(1f),
                         text = L.order.descAddProduct(),
@@ -193,7 +187,7 @@ fun OrderScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(orderItems, key = { it.product.id }) { orderItem ->
+                        items(state.currentOrder, key = { it.product.id }) { orderItem ->
                             OrderListItem(
                                 id = orderItem.product.id,
                                 name = orderItem.product.name,

@@ -14,6 +14,7 @@ import org.datepollsystems.waiterrobot.shared.features.switchevent.models.Event
 import org.orbitmvi.orbit.syntax.simple.SimpleSyntax
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.reduce
+import org.orbitmvi.orbit.syntax.simple.subIntent
 
 class StripeInitializationViewModel internal constructor(
     private val stripe: StripeProvider,
@@ -23,11 +24,12 @@ class StripeInitializationViewModel internal constructor(
 ) {
     private lateinit var locationId: String
 
-    override suspend fun SimpleSyntax<
-        StripeInitializationState,
-        NavOrViewModelEffect<StripeInitializationEffect>
-        >.onCreate() {
+    override suspend fun onCreate() = subIntent {
         setLocationId()
+    }
+
+    override suspend fun onUnhandledException(exception: Throwable) {
+        TODO("Not yet implemented")
     }
 
     fun startInitialization() = intent {

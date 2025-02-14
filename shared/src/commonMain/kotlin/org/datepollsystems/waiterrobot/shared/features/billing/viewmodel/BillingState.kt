@@ -1,9 +1,11 @@
 package org.datepollsystems.waiterrobot.shared.features.billing.viewmodel
 
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
+import org.datepollsystems.waiterrobot.shared.core.data.Resource
+import org.datepollsystems.waiterrobot.shared.core.data.asListResource
+import org.datepollsystems.waiterrobot.shared.core.data.objCArray
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.DialogState
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewModelState
-import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 import org.datepollsystems.waiterrobot.shared.features.billing.models.BillItem
 import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.ChangeBreakUp.Companion.breakUp
 import org.datepollsystems.waiterrobot.shared.features.switchevent.models.Event
@@ -12,28 +14,32 @@ import org.datepollsystems.waiterrobot.shared.utils.cent
 import org.datepollsystems.waiterrobot.shared.utils.euro
 import org.datepollsystems.waiterrobot.shared.utils.sumOf
 import kotlin.math.abs
-import kotlin.native.HiddenFromObjC
+import kotlin.native.ObjCName
 
 data class BillingState(
-    override val viewState: ViewState = ViewState.Idle,
     val moneyGivenText: String = "",
     val change: Change? = null,
-    val paymentErrorDialog: DialogState? = null,
-    @Suppress("ConstructorParameterNaming")
-    internal val _billItems: Map<Long, BillItem> = emptyMap()
-) : ViewModelState() {
-    @HiddenFromObjC
-    val billItems: List<BillItem> by lazy { _billItems.values.toList() }
+    val paymentState: PaymentState? = null,
+    @Suppress("PropertyName", "ConstructorParameterNaming")
+    internal val _billItems: Resource<Map<Long, BillItem>> = Resource.Loading(),
+) : ViewModelState {
+
+    val billItems: Resource<List<BillItem>> by _billItems.asListResource()
 
     @Suppress("unused") // iOS only
-    val billItemsArray: Array<BillItem> by lazy { billItems.toTypedArray() }
+    @ObjCName("billItems")
+    val billItemsArray: Resource<Array<BillItem>> by billItems.objCArray()
 
-    val priceSum: Money by lazy { _billItems.values.sumOf(BillItem::priceSum) }
+    val priceSum: Money by lazy {
+        _billItems.data?.values?.sumOf { it.pricePerPiece * it.ordered } ?: Money(0)
+    }
 
-    @Deprecated("Use hasCustomSelection instead", ReplaceWith("hasCustomSelection"))
-    val hasSelectedItems: Boolean by lazy { _billItems.any { it.value.selectedForBill > 0 } }
+    val hasSelectedItems: Boolean by lazy {
+        _billItems.data?.values?.any { it.selectedForBill > 0 } ?: false
+    }
+
     val hasCustomSelection: Boolean by lazy {
-        _billItems.any { it.value.selectedForBill > 0 && it.value.selectedForBill != it.value.ordered }
+        _billItems.data?.values?.any { it.ordered > 0 && it.ordered != it.selectedForBill } ?: false
     }
 
     val contactLessState: ContactLessState by lazy {
@@ -51,8 +57,6 @@ data class BillingState(
         }
     }
 
-    override fun withViewState(viewState: ViewState): BillingState = copy(viewState = viewState)
-
     data class Change(
         val amount: Money,
         val breakUp: List<ChangeBreakUp> = amount.breakUp(),
@@ -64,6 +68,12 @@ data class BillingState(
 
     enum class ContactLessState {
         DISABLED, ENABLED, AMOUNT_TOO_LOW
+    }
+
+    sealed class PaymentState {
+        object Loading : PaymentState()
+        object Success : PaymentState()
+        data class Error(val dialog: DialogState) : PaymentState()
     }
 }
 

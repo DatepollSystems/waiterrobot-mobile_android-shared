@@ -40,9 +40,9 @@ import org.datepollsystems.waiterrobot.android.ui.core.view.RefreshableView
 import org.datepollsystems.waiterrobot.android.util.toColor
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
 import org.datepollsystems.waiterrobot.shared.core.data.Resource
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
-import org.datepollsystems.waiterrobot.shared.features.table.models.TableGroup
-import org.datepollsystems.waiterrobot.shared.features.table.viewmodel.list.TableListViewModel
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.GroupedTables
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
+import org.datepollsystems.waiterrobot.shared.features.table.presentation.list.TableListViewModel
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.noTableFound
 import org.koin.androidx.compose.koinViewModel
@@ -70,7 +70,7 @@ fun TableListScreen(
                     if (!tableGroups.isNullOrEmpty()) {
                         BadgedBox(
                             badge = {
-                                if (tableGroups.any { it.hidden }) {
+                                if (state.hasHiddenGroups) {
                                     Badge {
                                         Text(text = "!")
                                     }
@@ -112,12 +112,7 @@ fun TableListScreen(
                     sheetState = filterSheetState,
                     onDismissRequest = { showFilterSheet = false },
                 ) {
-                    TableGroupFilter(
-                        tableGroups = state.tableGroups.data,
-                        onToggle = vm::toggleFilter,
-                        showAll = vm::showAll,
-                        hideAll = vm::hideAll
-                    )
+                    TableGroupFilterSheet()
                 }
             }
         }
@@ -126,7 +121,7 @@ fun TableListScreen(
 
 @Composable
 private fun TableGrid(
-    groupsResource: Resource<List<TableGroup>>,
+    groupsResource: Resource<List<GroupedTables>>,
     onTableClick: (Table) -> Unit,
     refresh: () -> Unit
 ) {
@@ -136,7 +131,7 @@ private fun TableGrid(
             ErrorBar(message = groupsResource.userMessage, retryAction = refresh)
         }
 
-        if (tableGroups.isNullOrEmpty() || tableGroups.all(TableGroup::hidden)) {
+        if (tableGroups.isNullOrEmpty()) {
             CenteredText(
                 modifier = Modifier.weight(1f),
                 text = L.tableList.noTableFound(),
@@ -157,20 +152,18 @@ private fun TableGrid(
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
                 columns = GridCells.Adaptive(80.dp)
             ) {
-                tableGroups
-                    .filterNot(TableGroup::hidden)
-                    .forEach { group: TableGroup ->
-                        // TODO use a sticky header
-                        //  (Compose currently does not support sticky headers in LazyGrids)
-                        sectionHeader(key = "group-${group.id}", title = group.name)
-                        items(group.tables, key = Table::id) { table ->
-                            Table(
-                                table = table,
-                                color = group.color.toColor(),
-                                onClick = { onTableClick(table) }
-                            )
-                        }
+                tableGroups.forEach { group: GroupedTables ->
+                    // TODO use a sticky header
+                    //  (Compose currently does not support sticky headers in LazyGrids)
+                    sectionHeader(key = "group-${group.id}", title = group.name)
+                    items(group.tables, key = Table::id) { table ->
+                        Table(
+                            table = table,
+                            color = group.color.toColor(),
+                            onClick = { onTableClick(table) }
+                        )
                     }
+                }
             }
         }
     }

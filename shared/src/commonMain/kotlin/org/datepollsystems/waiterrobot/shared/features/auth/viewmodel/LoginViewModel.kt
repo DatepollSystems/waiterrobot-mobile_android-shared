@@ -22,9 +22,9 @@ class LoginViewModel internal constructor(
         try {
             when (val deepLink = DeepLink.createFromUrl(link)) {
                 is DeepLink.Auth.LoginLink -> {
-                    reduce { state.withViewState(ViewState.Loading) }
+                    reduce { state.copy(viewState = ViewState.Loading) }
                     authRepository.loginWaiter(deepLink)
-                    reduce { state.withViewState(ViewState.Idle) }
+                    reduce { state.copy(viewState = ViewState.Idle) }
                 }
 
                 is DeepLink.Auth.RegisterLink -> {
@@ -36,5 +36,9 @@ class LoginViewModel internal constructor(
         } catch (e: Exception) {
             logger.d(e) { "Error with debug login link: $link" }
         }
+    }
+
+    override suspend fun onUnhandledException(exception: Throwable) {
+        TODO("Not yet implemented")
     }
 }

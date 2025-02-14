@@ -14,7 +14,6 @@ import org.datepollsystems.waiterrobot.shared.features.auth.api.WaiterApi
 import org.datepollsystems.waiterrobot.shared.features.switchevent.repository.SwitchEventRepository
 import org.datepollsystems.waiterrobot.shared.utils.DeepLink
 import org.koin.core.component.inject
-import kotlin.coroutines.cancellation.CancellationException
 
 internal class AuthRepository(
     private val authApi: AuthApi,
@@ -68,20 +67,18 @@ internal class AuthRepository(
     }
 
     private suspend fun autoSelectEvent() {
-        @Suppress("TooGenericExceptionCaught")
-        try {
-            // Auto select event when there is only one available
-            eventRepository.getEvents().singleOrNull()?.let {
-                eventRepository.switchToEvent(it)
+        // Auto select event when there is only one available
+        eventRepository.getEvents().fold(
+            onSuccess = { events ->
+                events.singleOrNull()?.also { eventRepository.switchToEvent(it) }
+            },
+            onFailure = { e ->
+                logger.w(e) { "Auto-selecting event failed" }
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            logger.w(e) { "Auto-selecting event failed" }
-        }
+        )
     }
 
-    private suspend fun store(tokens: Tokens) {
+    private fun store(tokens: Tokens) {
         CommonApp.settings.tokens = tokens
         logger.d { "Saved tokens" }
 

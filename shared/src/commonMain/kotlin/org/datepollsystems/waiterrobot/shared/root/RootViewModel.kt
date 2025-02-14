@@ -23,6 +23,7 @@ import org.orbitmvi.orbit.syntax.simple.SimpleSyntax
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.syntax.simple.repeatOnSubscription
+import org.orbitmvi.orbit.syntax.simple.subIntent
 import kotlin.time.Duration.Companion.seconds
 
 class RootViewModel internal constructor(
@@ -30,7 +31,7 @@ class RootViewModel internal constructor(
     private val rootApi: RootApi,
 ) : AbstractViewModel<RootState, RootEffect>(RootState()) {
 
-    override suspend fun SimpleSyntax<RootState, NavOrViewModelEffect<RootEffect>>.onCreate() {
+    override suspend fun onCreate() = subIntent {
         repeatOnSubscription {
             launch { watchLoginState() }
             launch { watchAppTheme() }
@@ -65,7 +66,7 @@ class RootViewModel internal constructor(
             return
         }
 
-        reduce { state.withViewState(ViewState.Loading) }
+        reduce { state.copy(viewState = ViewState.Loading) }
 
         try {
             when (deepLink) {
@@ -74,11 +75,21 @@ class RootViewModel internal constructor(
                     navigator.push(Screen.RegisterScreen(deepLink))
                 }
             }
-            reduce { state.withViewState(ViewState.Idle) }
+            reduce { state.copy(viewState = ViewState.Idle) }
         } catch (e: CancellationException) {
             throw e
         } catch (_: ApiException.CredentialsIncorrect) {
-            reduceError(L.root.invalidLoginLink.title(), L.root.invalidLoginLink.desc())
+            reduce {
+                state.copy(
+                    viewState = ViewState.Error(
+                        L.root.invalidLoginLink.title(),
+                        L.root.invalidLoginLink.desc(),
+                        onDismiss = {
+                            intent { reduce { state.copy(viewState = ViewState.Idle) } }
+                        }
+                    )
+                )
+            }
         }
     }
 
@@ -108,5 +119,9 @@ class RootViewModel internal constructor(
                 state.copy(isLoggedIn = tokens != null, eventSelected = event != null)
             }
         }.collect()
+    }
+
+    override suspend fun onUnhandledException(exception: Throwable) {
+        TODO("Not yet implemented")
     }
 }

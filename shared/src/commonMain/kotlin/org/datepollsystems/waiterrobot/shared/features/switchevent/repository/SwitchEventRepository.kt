@@ -7,25 +7,28 @@ import org.datepollsystems.waiterrobot.shared.core.sentry.SentryTag
 import org.datepollsystems.waiterrobot.shared.core.sentry.setTag
 import org.datepollsystems.waiterrobot.shared.features.switchevent.api.EventLocationApi
 import org.datepollsystems.waiterrobot.shared.features.switchevent.models.Event
+import org.datepollsystems.waiterrobot.shared.utils.extensions.runCatchingCancelable
 
 internal class SwitchEventRepository(
     private val eventLocationApi: EventLocationApi,
 ) : AbstractRepository() {
 
-    suspend fun getEvents(): List<Event> = eventLocationApi.getEvents().map {
-        Event(
-            id = it.id,
-            name = it.name,
-            startDate = it.startDate,
-            endDate = it.endDate,
-            city = it.city,
-            organisationId = it.organisationId,
-            stripeSettings = if (it.stripeEnabled && it.stripeLocationId != null) {
-                Event.StripeSettings.Enabled(it.stripeLocationId, it.stripeMinAmount ?: 0)
-            } else {
-                Event.StripeSettings.Disabled
-            }
-        )
+    suspend fun getEvents(): Result<List<Event>> = runCatchingCancelable {
+        eventLocationApi.getEvents().map {
+            Event(
+                id = it.id,
+                name = it.name,
+                startDate = it.startDate,
+                endDate = it.endDate,
+                city = it.city,
+                organisationId = it.organisationId,
+                stripeSettings = if (it.stripeEnabled && it.stripeLocationId != null) {
+                    Event.StripeSettings.Enabled(it.stripeLocationId, it.stripeMinAmount ?: 0)
+                } else {
+                    Event.StripeSettings.Disabled
+                }
+            )
+        }
     }
 
     suspend fun switchToEvent(event: Event): Boolean {

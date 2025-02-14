@@ -18,7 +18,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import org.datepollsystems.waiterrobot.android.ui.common.CustomDialog
 import org.datepollsystems.waiterrobot.android.ui.core.Preview
-import org.datepollsystems.waiterrobot.shared.features.order.models.OrderItem
+import org.datepollsystems.waiterrobot.shared.features.order.domain.model.OrderItem
+import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Product
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.cancel
 import org.datepollsystems.waiterrobot.shared.generated.localization.clear
@@ -72,7 +73,7 @@ fun AddNoteDialog(item: OrderItem, onDismiss: () -> Unit, onSave: (note: String?
 private fun AddNoteDialogPreview() = Preview {
     AddNoteDialog(
         item = OrderItem(
-            product = org.datepollsystems.waiterrobot.shared.features.order.models.Product(
+            product = Product(
                 id = 1,
                 name = "Beer",
                 price = 4.euro,

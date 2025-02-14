@@ -6,6 +6,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.DialogState
+import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
+import org.datepollsystems.waiterrobot.shared.generated.localization.L
+import org.datepollsystems.waiterrobot.shared.generated.localization.ok
 
 @Composable
 fun AlertDialogFromState(dialog: DialogState?) {
@@ -24,6 +27,21 @@ fun AlertDialogFromState(dialog: DialogState?) {
                 TextButton(onClick = button.action) {
                     Text(text = button.text)
                 }
+            }
+        }
+    )
+}
+
+@Composable
+fun AlertDialogFromState(state: ViewState) {
+    if (state !is ViewState.Error) return
+    AlertDialog(
+        onDismissRequest = state.onDismiss,
+        title = { Text(text = state.title) },
+        text = { Text(text = state.message) },
+        confirmButton = {
+            Button(onClick = state.onDismiss) {
+                Text(text = L.dialog.ok())
             }
         }
     )

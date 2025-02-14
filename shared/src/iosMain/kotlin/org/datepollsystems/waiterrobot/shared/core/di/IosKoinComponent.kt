@@ -8,9 +8,9 @@ import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.Billing
 import org.datepollsystems.waiterrobot.shared.features.order.viewmodel.OrderViewModel
 import org.datepollsystems.waiterrobot.shared.features.settings.viewmodel.SettingsViewModel
 import org.datepollsystems.waiterrobot.shared.features.switchevent.viewmodel.SwitchEventViewModel
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
-import org.datepollsystems.waiterrobot.shared.features.table.viewmodel.detail.TableDetailViewModel
-import org.datepollsystems.waiterrobot.shared.features.table.viewmodel.list.TableListViewModel
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
+import org.datepollsystems.waiterrobot.shared.features.table.presentation.detail.TableDetailViewModel
+import org.datepollsystems.waiterrobot.shared.features.table.presentation.list.TableListViewModel
 import org.datepollsystems.waiterrobot.shared.root.RootViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get

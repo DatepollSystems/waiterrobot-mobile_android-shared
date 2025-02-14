@@ -21,9 +21,9 @@ class LoginScannerViewModel internal constructor(
         try {
             when (val deepLink = DeepLink.createFromUrl(code)) {
                 is DeepLink.Auth.LoginLink -> {
-                    reduce { state.withViewState(ViewState.Loading) }
+                    reduce { state.copy(viewState = ViewState.Loading) }
                     authRepository.loginWaiter(deepLink)
-                    reduce { state.withViewState(ViewState.Idle) }
+                    reduce { state.copy(viewState = ViewState.Idle) }
                 }
 
                 is DeepLink.Auth.RegisterLink -> {
@@ -34,11 +34,25 @@ class LoginScannerViewModel internal constructor(
             throw e
         } catch (e: Exception) {
             logger.d(e) { "Error with scanned login code: $code" }
-            reduceError(L.login.invalidCode.title(), L.login.invalidCode.desc())
+            reduce {
+                state.copy(
+                    viewState = ViewState.Error(
+                        L.login.invalidCode.title(),
+                        L.login.invalidCode.desc(),
+                        onDismiss = {
+                            intent { reduce { state.copy(viewState = ViewState.Idle) } }
+                        }
+                    )
+                )
+            }
         }
     }
 
     fun goBack() = intent {
         navigator.pop()
+    }
+
+    override suspend fun onUnhandledException(exception: Throwable) {
+        TODO("Not yet implemented")
     }
 }

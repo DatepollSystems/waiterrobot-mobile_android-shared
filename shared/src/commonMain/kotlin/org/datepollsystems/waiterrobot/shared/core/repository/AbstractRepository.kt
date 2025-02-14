@@ -7,8 +7,11 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Instant
 import org.datepollsystems.waiterrobot.shared.core.data.Resource
 import org.datepollsystems.waiterrobot.shared.core.di.injectLoggerForClass
+import org.datepollsystems.waiterrobot.shared.utils.extensions.Now
+import org.datepollsystems.waiterrobot.shared.utils.extensions.runCatchingCancelable
 import org.koin.core.component.KoinComponent
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -20,21 +23,41 @@ internal abstract class AbstractRepository : KoinComponent {
      *
      * @param fetch the fetch operation to execute
      */
-    internal fun <ModelType> remoteResource(
-        fetch: suspend () -> ModelType,
-    ): Flow<Resource<ModelType>> = flow {
-        emit(Resource.Loading(null))
+    internal fun <Model> remoteResource(
+        initial: Model? = null,
+        fetch: suspend () -> Model,
+    ): Flow<Resource<Model>> = flow {
+        emit(Resource.Loading(initial))
 
-        @Suppress("TooGenericExceptionCaught")
-        try {
+        runCatchingCancelable {
             val result = fetch()
             emit(Resource.Success(result))
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
+        }.onFailure { e ->
             logger.i(e) { "Fetching remoteResource failed" }
-            emit(Resource.Error(e, null))
+            emit(Resource.Error(e, initial))
         }
+    }
+
+    protected fun <Entity, Model> cached(
+        query: () -> Flow<List<Entity>>,
+        shouldRefresh: Entity.(now: Instant) -> Boolean,
+        refresh: suspend () -> Unit,
+        transform: (List<Entity>) -> List<Model>
+    ): Flow<Resource<List<Model>>> = flow {
+        val now = Now()
+        val cached = query().first()
+
+        if (cached.isEmpty() || cached.any { it.shouldRefresh(now) }) {
+            emit(Resource.Loading(transform(cached)))
+
+            runCatchingCancelable {
+                refresh() // Result will be emitted by the emitAll at the end
+            }.onFailure { e ->
+                emit(Resource.Error(e, transform(cached)))
+            }
+        }
+
+        emitAll(query().map { Resource.Success(transform(it)) })
     }
 }
 

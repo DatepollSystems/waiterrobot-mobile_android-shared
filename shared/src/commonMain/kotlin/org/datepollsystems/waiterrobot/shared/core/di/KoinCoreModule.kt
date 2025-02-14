@@ -9,12 +9,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
+import org.datepollsystems.waiterrobot.shared.core.data.EventProvider
+import org.datepollsystems.waiterrobot.shared.core.data.SettingsEventProvider
 import org.datepollsystems.waiterrobot.shared.core.data.api.createAuthorizedClient
 import org.datepollsystems.waiterrobot.shared.core.data.api.createBasicClient
 import org.datepollsystems.waiterrobot.shared.core.data.db.createRealmDB
 import org.datepollsystems.waiterrobot.shared.core.sentry.SentryLogWriter
 import org.koin.core.qualifier.named
 import org.koin.core.scope.Scope
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 private val apiClientQualifier = named("apiClient")
@@ -54,6 +57,8 @@ internal val coreModule = module {
     }
 
     single { createRealmDB() }
+
+    single { SettingsEventProvider() } bind EventProvider::class
 }
 
 private fun createJson() = Json {

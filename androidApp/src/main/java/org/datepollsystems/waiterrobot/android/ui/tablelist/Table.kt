@@ -19,7 +19,7 @@ import org.datepollsystems.waiterrobot.android.ui.core.Preview
 import org.datepollsystems.waiterrobot.android.util.bestContrastColor
 import org.datepollsystems.waiterrobot.android.util.desaturateOnDarkMode
 import org.datepollsystems.waiterrobot.android.util.getContentColor
-import org.datepollsystems.waiterrobot.shared.features.table.models.Table
+import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 
 @Composable
 fun Table(table: Table, color: Color?, onClick: (Table) -> Unit) {
