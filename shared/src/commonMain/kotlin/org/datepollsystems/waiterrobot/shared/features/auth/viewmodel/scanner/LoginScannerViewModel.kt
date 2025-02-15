@@ -3,10 +3,12 @@ package org.datepollsystems.waiterrobot.shared.features.auth.viewmodel.scanner
 import kotlinx.coroutines.CancellationException
 import org.datepollsystems.waiterrobot.shared.core.navigation.Screen
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.AbstractViewModel
+import org.datepollsystems.waiterrobot.shared.core.viewmodel.DialogState
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 import org.datepollsystems.waiterrobot.shared.features.auth.repository.AuthRepository
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.desc
+import org.datepollsystems.waiterrobot.shared.generated.localization.ok
 import org.datepollsystems.waiterrobot.shared.generated.localization.title
 import org.datepollsystems.waiterrobot.shared.utils.DeepLink
 import org.orbitmvi.orbit.syntax.simple.intent
@@ -34,14 +36,16 @@ class LoginScannerViewModel internal constructor(
             throw e
         } catch (e: Exception) {
             logger.d(e) { "Error with scanned login code: $code" }
+            val dismiss: () -> Unit = {
+                intent { reduce { state.copy(viewState = ViewState.Idle) } }
+            }
             reduce {
                 state.copy(
                     viewState = ViewState.Error(
                         L.login.invalidCode.title(),
                         L.login.invalidCode.desc(),
-                        onDismiss = {
-                            intent { reduce { state.copy(viewState = ViewState.Idle) } }
-                        }
+                        onDismiss = dismiss,
+                        primaryButton = DialogState.Button(L.dialog.ok(), dismiss)
                     )
                 )
             }

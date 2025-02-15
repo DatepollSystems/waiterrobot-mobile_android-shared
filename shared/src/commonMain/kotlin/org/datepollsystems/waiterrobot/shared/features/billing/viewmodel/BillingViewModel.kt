@@ -96,13 +96,11 @@ class BillingViewModel internal constructor(
                     logger.i("Some products have already been payed.")
                     reduce {
                         state.copy(
-                            paymentState = ViewState.ErrorDialog(
-                                DialogState(
-                                    L.billing.productsAlreadyPayed.title(),
-                                    L.billing.productsAlreadyPayed.desc(),
-                                    primaryButton = DialogState.Button("Refresh", ::refreshBill),
-                                    onDismiss = ::dismissPaymentState
-                                )
+                            paymentState = ViewState.Error(
+                                L.billing.productsAlreadyPayed.title(),
+                                L.billing.productsAlreadyPayed.desc(),
+                                primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                                onDismiss = ::dismissPaymentState
                             )
                         )
                     }
@@ -112,13 +110,11 @@ class BillingViewModel internal constructor(
                     logger.e("Failed to pay bill", e)
                     reduce {
                         state.copy(
-                            paymentState = ViewState.ErrorDialog(
-                                DialogState(
-                                    title = L.exceptions.title(),
-                                    text = e.getLocalizedUserMessage(),
-                                    primaryButton = DialogState.Button("Refresh", ::refreshBill),
-                                    onDismiss = ::dismissPaymentState
-                                )
+                            paymentState = ViewState.Error(
+                                title = L.exceptions.title(),
+                                text = e.getLocalizedUserMessage(),
+                                primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                                onDismiss = ::dismissPaymentState
                             )
                         )
                     }
@@ -157,13 +153,11 @@ class BillingViewModel internal constructor(
             logger.e(e) { "Failed to initiate contactless payment" }
             reduce {
                 state.copy(
-                    paymentState = ViewState.ErrorDialog(
-                        DialogState(
-                            title = L.exceptions.title(),
-                            text = e.getLocalizedUserMessage(),
-                            primaryButton = DialogState.Button("Refresh", ::refreshBill),
-                            onDismiss = ::dismissPaymentState
-                        )
+                    paymentState = ViewState.Error(
+                        title = L.exceptions.title(),
+                        text = e.getLocalizedUserMessage(),
+                        primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                        onDismiss = ::dismissPaymentState
                     )
                 )
             }
@@ -294,21 +288,19 @@ class BillingViewModel internal constructor(
 
                 reduce {
                     state.copy(
-                        paymentState = ViewState.ErrorDialog(
-                            DialogState(
-                                title = error.getDialogTitle(),
-                                text = error.getDialogText(),
-                                onDismiss = {
-                                    cancelPayment(paymentIntent)
-                                },
-                                primaryButton = DialogState.Button("OK") {
-                                    cancelPayment(paymentIntent)
-                                },
-                                secondaryButton = DialogState.Button("Retry") {
-                                    logger.i("Retrying card payment (${paymentIntent.id})")
-                                    intent { collectPayment(stripeProvider, paymentIntent) }
-                                }
-                            )
+                        paymentState = ViewState.Error(
+                            title = error.getDialogTitle(),
+                            text = error.getDialogText(),
+                            onDismiss = {
+                                cancelPayment(paymentIntent)
+                            },
+                            primaryButton = DialogState.Button("OK") {
+                                cancelPayment(paymentIntent)
+                            },
+                            secondaryButton = DialogState.Button("Retry") {
+                                logger.i("Retrying card payment (${paymentIntent.id})")
+                                intent { collectPayment(stripeProvider, paymentIntent) }
+                            }
                         )
                     )
                 }
@@ -342,13 +334,11 @@ class BillingViewModel internal constructor(
             logger.e("Failed to cancel payment", e)
             reduce {
                 state.copy(
-                    paymentState = ViewState.ErrorDialog(
-                        DialogState(
-                            title = L.exceptions.title(),
-                            text = e.getLocalizedUserMessage(),
-                            primaryButton = DialogState.Button("Refresh", ::refreshBill),
-                            onDismiss = ::dismissPaymentState
-                        )
+                    paymentState = ViewState.Error(
+                        title = L.exceptions.title(),
+                        text = e.getLocalizedUserMessage(),
+                        primaryButton = DialogState.Button("Refresh", ::refreshBill),
+                        onDismiss = ::dismissPaymentState
                     )
                 )
             }

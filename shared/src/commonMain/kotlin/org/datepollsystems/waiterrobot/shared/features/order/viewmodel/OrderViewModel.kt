@@ -95,13 +95,11 @@ class OrderViewModel internal constructor(
                                 intent { reduce { state.copy(orderingState = ViewState.Idle) } }
                             }
                             state.copy(
-                                orderingState = ViewState.ErrorDialog(
-                                    DialogState(
-                                        L.exceptions.title(),
-                                        L.exceptions.generic(),
-                                        onDismiss = dismiss,
-                                        primaryButton = DialogState.Button(L.dialog.ok(), dismiss)
-                                    )
+                                orderingState = ViewState.Error(
+                                    L.exceptions.title(),
+                                    L.exceptions.generic(),
+                                    onDismiss = dismiss,
+                                    primaryButton = DialogState.Button(L.dialog.ok(), dismiss)
                                 )
                             )
                         }
@@ -128,15 +126,13 @@ class OrderViewModel internal constructor(
             logger.w("Tried to add product with id '$id' but could not find the product.")
             reduce {
                 state.copy(
-                    orderingState = ViewState.ErrorDialog(
-                        dialog = DialogState(
-                            title = L.order.couldNotFindProduct.title(),
-                            text = L.order.couldNotFindProduct.desc(),
-                            onDismiss = { removeItem(id) },
-                            primaryButton = DialogState.Button(
-                                text = L.dialog.ok(),
-                                action = { removeItem(id) }
-                            )
+                    orderingState = ViewState.Error(
+                        title = L.order.couldNotFindProduct.title(),
+                        text = L.order.couldNotFindProduct.desc(),
+                        onDismiss = { removeItem(id) },
+                        primaryButton = DialogState.Button(
+                            text = L.dialog.ok(),
+                            action = { removeItem(id) }
                         )
                     )
                 )
@@ -178,15 +174,13 @@ class OrderViewModel internal constructor(
         refreshProducts()
         reduce {
             state.copy(
-                orderingState = ViewState.ErrorDialog(
-                    dialog = DialogState(
-                        title = L.order.productSoldOut.title(),
-                        text = L.order.productSoldOut.descOrderSent(product.name),
-                        onDismiss = { removeItem(product.id) },
-                        primaryButton = DialogState.Button(
-                            text = L.dialog.ok(),
-                            action = { removeItem(product.id) }
-                        )
+                orderingState = ViewState.Error(
+                    title = L.order.productSoldOut.title(),
+                    text = L.order.productSoldOut.descOrderSent(product.name),
+                    onDismiss = { removeItem(product.id) },
+                    primaryButton = DialogState.Button(
+                        text = L.dialog.ok(),
+                        action = { removeItem(product.id) }
                     )
                 )
             )
@@ -200,15 +194,13 @@ class OrderViewModel internal constructor(
         refreshProducts()
         reduce {
             state.copy(
-                orderingState = ViewState.ErrorDialog(
-                    dialog = DialogState(
-                        title = L.order.stockToLow.title(),
-                        text = L.order.stockToLow.desc(remaining.toString(), product.name),
-                        onDismiss = {},
-                        primaryButton = DialogState.Button(
-                            text = L.dialog.ok(),
-                            action = { }
-                        )
+                orderingState = ViewState.Error(
+                    title = L.order.stockToLow.title(),
+                    text = L.order.stockToLow.desc(remaining.toString(), product.name),
+                    onDismiss = {},
+                    primaryButton = DialogState.Button(
+                        text = L.dialog.ok(),
+                        action = { }
                     )
                 )
             )

@@ -2,10 +2,12 @@ package org.datepollsystems.waiterrobot.shared.features.auth.viewmodel.register
 
 import org.datepollsystems.waiterrobot.shared.core.data.api.ApiException
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.AbstractViewModel
+import org.datepollsystems.waiterrobot.shared.core.viewmodel.DialogState
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 import org.datepollsystems.waiterrobot.shared.features.auth.repository.AuthRepository
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.desc
+import org.datepollsystems.waiterrobot.shared.generated.localization.ok
 import org.datepollsystems.waiterrobot.shared.generated.localization.title
 import org.datepollsystems.waiterrobot.shared.utils.DeepLink
 import org.orbitmvi.orbit.syntax.simple.intent
@@ -22,14 +24,16 @@ class RegisterViewModel internal constructor(
             authRepository.createWaiter(registerLink, name)
             reduce { state.copy(viewState = ViewState.Idle) }
         } catch (_: ApiException.CredentialsIncorrect) {
+            val dismiss: () -> Unit = {
+                intent { reduce { state.copy(viewState = ViewState.Idle) } }
+            }
             reduce {
                 state.copy(
                     viewState = ViewState.Error(
                         L.login.invalidCode.title(),
                         L.login.invalidCode.desc(),
-                        onDismiss = {
-                            intent { reduce { state.copy(viewState = ViewState.Idle) } }
-                        }
+                        onDismiss = dismiss,
+                        primaryButton = DialogState.Button(L.dialog.ok(), dismiss)
                     )
                 )
             }

@@ -67,7 +67,7 @@ fun TableListScreen(
                 title = { Text(CommonApp.settings.eventName) },
                 actions = {
                     val tableGroups = state.tableGroups.data
-                    if (!tableGroups.isNullOrEmpty()) {
+                    if (tableGroups != null) {
                         BadgedBox(
                             badge = {
                                 if (state.hasHiddenGroups) {

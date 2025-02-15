@@ -1,5 +1,6 @@
 package org.datepollsystems.waiterrobot.android.ui.settings
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -25,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
@@ -142,10 +144,12 @@ fun SettingsScreen(
                 Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
             }
         },
-    ) {
+    ) { padding ->
         val uriHandler = LocalUriHandler.current
 
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier.padding(padding)
+        ) {
             settingsSection(L.settings.general.title()) {
                 settingsItem(
                     icon = { Icon(Icons.Filled.Logout, contentDescription = "Logout") },

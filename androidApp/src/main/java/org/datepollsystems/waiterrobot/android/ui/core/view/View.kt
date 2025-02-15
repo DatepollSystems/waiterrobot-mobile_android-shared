@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import org.datepollsystems.waiterrobot.android.ui.core.AlertDialogFromState
 import org.datepollsystems.waiterrobot.android.ui.core.LocalSnackbarHostState
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.StateWithViewState
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
@@ -18,8 +19,8 @@ import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 /**
  * Handles displaying errors and loading state.
  * If [onRefresh] is provided a [RefreshableView] is used and [content] therefore
- * must be scrollable ([RefreshableView]). Otherwise a [LoadableView] is used.
- * @see ErrorDialog
+ * must be scrollable. Otherwise a [LoadableView] is used.
+ * @see AlertDialogFromState
  * @see RefreshableView
  * @see LoadableView
  */
@@ -47,7 +48,7 @@ fun View(
     }
 
     if (viewState is ViewState.Error) {
-        ErrorDialog(viewState)
+        AlertDialogFromState(viewState.dialog)
     }
 }
 

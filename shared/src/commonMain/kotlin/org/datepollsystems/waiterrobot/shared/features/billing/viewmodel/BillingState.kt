@@ -39,7 +39,7 @@ data class BillingState(
     }
 
     val hasCustomSelection: Boolean by lazy {
-        _billItems.data?.values?.any { it.ordered > 0 && it.ordered != it.selectedForBill } ?: false
+        hasSelectedItems && _billItems.data?.values?.any { it.selectedForBill != it.ordered } ?: false
     }
 
     val contactLessState: ContactLessState by lazy {
