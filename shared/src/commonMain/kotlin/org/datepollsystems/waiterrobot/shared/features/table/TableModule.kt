@@ -8,12 +8,14 @@ import org.datepollsystems.waiterrobot.shared.features.table.data.local.TableDat
 import org.datepollsystems.waiterrobot.shared.features.table.data.remote.TableApi
 import org.datepollsystems.waiterrobot.shared.features.table.domain.GetGroupedTablesUseCase
 import org.datepollsystems.waiterrobot.shared.features.table.domain.GetTableGroupsUseCase
+import org.datepollsystems.waiterrobot.shared.features.table.domain.HasHiddenGroupsUseCase
 import org.datepollsystems.waiterrobot.shared.features.table.domain.HideTableGroupUseCases
 import org.datepollsystems.waiterrobot.shared.features.table.domain.RefreshTableGroupsUseCase
 import org.datepollsystems.waiterrobot.shared.features.table.domain.UpdateTablesWithOpenOrdersUseCase
 import org.datepollsystems.waiterrobot.shared.features.table.domain.repository.TableGroupRepository
 import org.datepollsystems.waiterrobot.shared.features.table.domain.repository.TableRepository
 import org.datepollsystems.waiterrobot.shared.features.table.presentation.detail.TableDetailViewModel
+import org.datepollsystems.waiterrobot.shared.features.table.presentation.filter.TableGroupFilterViewModel
 import org.datepollsystems.waiterrobot.shared.features.table.presentation.list.TableListViewModel
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -30,11 +32,13 @@ internal val tableModule: Module = module {
     singleOf(::TableGroupRepositoryImpl).bind<TableGroupRepository>()
 
     singleOf(::GetGroupedTablesUseCase)
-    singleOf(::GetTableGroupsUseCase)
-    singleOf(::HideTableGroupUseCases)
+    singleOf(::HasHiddenGroupsUseCase)
     singleOf(::RefreshTableGroupsUseCase)
     singleOf(::UpdateTablesWithOpenOrdersUseCase)
+    singleOf(::GetTableGroupsUseCase)
+    singleOf(::HideTableGroupUseCases)
 
     sharedViewModelOf(::TableListViewModel)
     sharedViewModelOf(::TableDetailViewModel)
+    sharedViewModelOf(::TableGroupFilterViewModel)
 }

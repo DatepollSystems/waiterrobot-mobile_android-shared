@@ -4,8 +4,8 @@ import org.datepollsystems.waiterrobot.shared.core.CommonApp
 import org.datepollsystems.waiterrobot.shared.core.data.Resource
 import org.datepollsystems.waiterrobot.shared.core.data.asListResource
 import org.datepollsystems.waiterrobot.shared.core.data.objCArray
-import org.datepollsystems.waiterrobot.shared.core.viewmodel.DialogState
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewModelState
+import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 import org.datepollsystems.waiterrobot.shared.features.billing.models.BillItem
 import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.ChangeBreakUp.Companion.breakUp
 import org.datepollsystems.waiterrobot.shared.features.switchevent.models.Event
@@ -19,7 +19,7 @@ import kotlin.native.ObjCName
 data class BillingState(
     val moneyGivenText: String = "",
     val change: Change? = null,
-    val paymentState: PaymentState? = null,
+    val paymentState: ViewState = ViewState.Idle,
     @Suppress("PropertyName", "ConstructorParameterNaming")
     internal val _billItems: Resource<Map<Long, BillItem>> = Resource.Loading(),
 ) : ViewModelState {
@@ -68,12 +68,6 @@ data class BillingState(
 
     enum class ContactLessState {
         DISABLED, ENABLED, AMOUNT_TOO_LOW
-    }
-
-    sealed class PaymentState {
-        object Loading : PaymentState()
-        object Success : PaymentState()
-        data class Error(val dialog: DialogState) : PaymentState()
     }
 }
 

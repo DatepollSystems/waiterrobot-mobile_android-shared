@@ -1,4 +1,4 @@
-package org.datepollsystems.waiterrobot.shared.features.order.data.remote.dto
+package org.datepollsystems.waiterrobot.shared.features.product.data.remote.dto
 
 import kotlinx.serialization.Serializable
 import org.datepollsystems.waiterrobot.shared.features.order.data.local.entity.ProductEntity

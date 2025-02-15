@@ -1,4 +1,4 @@
-package org.datepollsystems.waiterrobot.android.ui.order
+package org.datepollsystems.waiterrobot.android.ui.product
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,8 +21,8 @@ import org.datepollsystems.waiterrobot.android.util.bestContrastColor
 import org.datepollsystems.waiterrobot.android.util.desaturateOnDarkMode
 import org.datepollsystems.waiterrobot.android.util.getContentColor
 import org.datepollsystems.waiterrobot.android.util.toColor
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Allergen
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Product
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.Allergen
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.Product
 import org.datepollsystems.waiterrobot.shared.utils.euro
 
 @Composable

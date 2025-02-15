@@ -1,4 +1,4 @@
-package org.datepollsystems.waiterrobot.shared.features.order.domain.model
+package org.datepollsystems.waiterrobot.shared.features.product.domain.model
 
 data class Allergen(
     val id: Long,

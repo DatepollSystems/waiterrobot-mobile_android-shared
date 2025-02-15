@@ -1,17 +1,17 @@
-package org.datepollsystems.waiterrobot.shared.features.order.data
+package org.datepollsystems.waiterrobot.shared.features.product.data
 
 import kotlinx.coroutines.flow.Flow
 import org.datepollsystems.waiterrobot.shared.core.data.Resource
 import org.datepollsystems.waiterrobot.shared.core.repository.AbstractRepository
-import org.datepollsystems.waiterrobot.shared.features.order.data.local.ProductDatabase
 import org.datepollsystems.waiterrobot.shared.features.order.data.local.entity.toModels
-import org.datepollsystems.waiterrobot.shared.features.order.data.remote.ProductApi
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.ProductGroup
-import org.datepollsystems.waiterrobot.shared.features.order.domain.repository.ProductGroupRepository
+import org.datepollsystems.waiterrobot.shared.features.product.data.local.ProductDatabase
+import org.datepollsystems.waiterrobot.shared.features.product.data.remote.ProductApi
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.GroupedProducts
+import org.datepollsystems.waiterrobot.shared.features.product.domain.repository.ProductGroupRepository
 import org.datepollsystems.waiterrobot.shared.utils.extensions.Now
 import org.datepollsystems.waiterrobot.shared.utils.extensions.olderThan
 import org.datepollsystems.waiterrobot.shared.utils.extensions.runCatchingCancelable
-import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 internal class ProductGroupRepositoryImpl(
     private val productApi: ProductApi,
@@ -21,7 +21,7 @@ internal class ProductGroupRepositoryImpl(
     override fun getProductGroups(
         eventId: Long,
         filter: String?
-    ): Flow<Resource<List<ProductGroup>>> = cached(
+    ): Flow<Resource<List<GroupedProducts>>> = cached(
         query = { productDb.getForEventFlow(eventId) },
         shouldRefresh = { now -> updated.olderThan(maxAge, now) },
         refresh = { refreshProductGroups(eventId) },
@@ -36,6 +36,6 @@ internal class ProductGroupRepositoryImpl(
     }
 
     companion object {
-        private val maxAge = 24.hours
+        private val maxAge = 15.minutes
     }
 }

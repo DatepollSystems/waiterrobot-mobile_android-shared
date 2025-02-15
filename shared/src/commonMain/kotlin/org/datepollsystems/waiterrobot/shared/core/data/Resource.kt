@@ -10,15 +10,7 @@ sealed class Resource<T> {
         else -> Loading(data)
     }
 
-    @Deprecated("Should not be used")
-    fun map(transform: (T?) -> T?): Resource<T> {
-        @Suppress("UNCHECKED_CAST")
-        return when (this) {
-            is Error -> Error(userMessage, transform(data))
-            is Loading -> Loading(transform(data))
-            is Success -> Success(transform(data) as T)
-        }
-    }
+    internal fun error(exception: Throwable): Error<T> = Error(exception, data)
 
     internal fun withDefaultData(default: Resource<T>): Resource<T> = withDefaultData(default.data)
     internal fun withDefaultData(default: T?): Resource<T> {
@@ -36,13 +28,21 @@ sealed class Resource<T> {
         is Success -> copy(data = data)
     }
 
-    data class Loading<T>(override val data: T? = null) : Resource<T>()
+    data class Loading<T>(override val data: T? = null) : Resource<T>() {
+        constructor(resource: Resource<T>) : this(resource.data)
+    }
+
     data class Success<T>(override val data: T) : Resource<T>()
     data class Error<T>(val userMessage: String, override val data: T? = null) : Resource<T>() {
         constructor(
             exception: Throwable,
             data: T? = null
         ) : this(exception.getLocalizedUserMessage(), data)
+
+        constructor(
+            exception: Throwable,
+            resource: Resource<T>
+        ) : this(exception.getLocalizedUserMessage(), resource.data)
     }
 }
 

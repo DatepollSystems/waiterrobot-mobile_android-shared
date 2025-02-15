@@ -6,6 +6,7 @@ import org.datepollsystems.waiterrobot.shared.core.data.Resource
 import org.datepollsystems.waiterrobot.shared.core.data.api.ApiException
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.AbstractViewModel
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.DialogState
+import org.datepollsystems.waiterrobot.shared.core.viewmodel.ViewState
 import org.datepollsystems.waiterrobot.shared.features.billing.api.models.PayBillRequestDto
 import org.datepollsystems.waiterrobot.shared.features.billing.models.BillItem
 import org.datepollsystems.waiterrobot.shared.features.billing.repository.BillingRepositoryImpl
@@ -57,12 +58,12 @@ class BillingViewModel internal constructor(
             table,
             CommonApp.settings.paymentSelectAllProductsByDefault
         ).onSuccess {
-            reduce { state.copy(_billItems = Resource.Success(it), paymentState = null) }
+            reduce { state.copy(_billItems = Resource.Success(it), paymentState = ViewState.Idle) }
         }.onFailure { e ->
             reduce {
                 state.copy(
                     _billItems = Resource.Error(e, state._billItems.data),
-                    paymentState = null
+                    paymentState = ViewState.Idle
                 )
             }
         }
@@ -74,7 +75,7 @@ class BillingViewModel internal constructor(
             return@intent
         }
 
-        reduce { state.copy(paymentState = BillingState.PaymentState.Loading) }
+        reduce { state.copy(paymentState = ViewState.Loading) }
 
         val selectedItems = state.billItems.data?.filter { it.selectedForBill > 0 } ?: emptyList()
         billingRepository.payBill(
@@ -86,7 +87,7 @@ class BillingViewModel internal constructor(
                 state.copy(
                     _billItems = Resource.Success(it),
                     change = null,
-                    paymentState = BillingState.PaymentState.Success
+                    paymentState = ViewState.Idle
                 )
             }
         }.onFailure { e ->
@@ -95,7 +96,7 @@ class BillingViewModel internal constructor(
                     logger.i("Some products have already been payed.")
                     reduce {
                         state.copy(
-                            paymentState = BillingState.PaymentState.Error(
+                            paymentState = ViewState.ErrorDialog(
                                 DialogState(
                                     L.billing.productsAlreadyPayed.title(),
                                     L.billing.productsAlreadyPayed.desc(),
@@ -111,7 +112,7 @@ class BillingViewModel internal constructor(
                     logger.e("Failed to pay bill", e)
                     reduce {
                         state.copy(
-                            paymentState = BillingState.PaymentState.Error(
+                            paymentState = ViewState.ErrorDialog(
                                 DialogState(
                                     title = L.exceptions.title(),
                                     text = e.getLocalizedUserMessage(),
@@ -127,7 +128,7 @@ class BillingViewModel internal constructor(
     }
 
     private fun dismissPaymentState() = intent {
-        reduce { state.copy(paymentState = null) }
+        reduce { state.copy(paymentState = ViewState.Idle) }
     }
 
     fun initiateContactLessPayment() = intent {
@@ -142,7 +143,7 @@ class BillingViewModel internal constructor(
             return@intent
         }
 
-        reduce { state.copy(paymentState = BillingState.PaymentState.Loading) }
+        reduce { state.copy(paymentState = ViewState.Loading) }
 
         val items = state._billItems.data?.values?.flatMap {
             it.orderProductIds.take(it.selectedForBill)
@@ -156,7 +157,7 @@ class BillingViewModel internal constructor(
             logger.e(e) { "Failed to initiate contactless payment" }
             reduce {
                 state.copy(
-                    paymentState = BillingState.PaymentState.Error(
+                    paymentState = ViewState.ErrorDialog(
                         DialogState(
                             title = L.exceptions.title(),
                             text = e.getLocalizedUserMessage(),
@@ -276,7 +277,7 @@ class BillingViewModel internal constructor(
         }
 
         subIntent {
-            reduce { state.copy(paymentState = BillingState.PaymentState.Loading) }
+            reduce { state.copy(paymentState = ViewState.Loading) }
 
             runCatchingCancelable {
                 stripeProvider.collectPayment(paymentIntent)
@@ -293,7 +294,7 @@ class BillingViewModel internal constructor(
 
                 reduce {
                     state.copy(
-                        paymentState = BillingState.PaymentState.Error(
+                        paymentState = ViewState.ErrorDialog(
                             DialogState(
                                 title = error.getDialogTitle(),
                                 text = error.getDialogText(),
@@ -321,7 +322,6 @@ class BillingViewModel internal constructor(
     private fun cancelPayment(paymentIntent: PaymentIntent) = intent {
         reduce {
             state.copy(
-                paymentState = null,
                 _billItems = state._billItems.loading()
             )
         }
@@ -342,7 +342,7 @@ class BillingViewModel internal constructor(
             logger.e("Failed to cancel payment", e)
             reduce {
                 state.copy(
-                    paymentState = BillingState.PaymentState.Error(
+                    paymentState = ViewState.ErrorDialog(
                         DialogState(
                             title = L.exceptions.title(),
                             text = e.getLocalizedUserMessage(),

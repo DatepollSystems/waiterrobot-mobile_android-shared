@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import org.datepollsystems.waiterrobot.android.ui.common.CustomDialog
 import org.datepollsystems.waiterrobot.android.ui.core.Preview
 import org.datepollsystems.waiterrobot.shared.features.order.domain.model.OrderItem
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Product
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.Product
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
 import org.datepollsystems.waiterrobot.shared.generated.localization.cancel
 import org.datepollsystems.waiterrobot.shared.generated.localization.clear

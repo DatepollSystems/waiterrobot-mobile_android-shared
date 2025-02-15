@@ -5,7 +5,7 @@ import kotlinx.coroutines.launch
 import org.datepollsystems.waiterrobot.shared.core.CommonApp
 import org.datepollsystems.waiterrobot.shared.core.navigation.Screen
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.AbstractViewModel
-import org.datepollsystems.waiterrobot.shared.features.order.domain.RefreshProductGroupsUseCase
+import org.datepollsystems.waiterrobot.shared.features.product.domain.RefreshProductGroupsUseCase
 import org.datepollsystems.waiterrobot.shared.features.settings.models.AppTheme
 import org.datepollsystems.waiterrobot.shared.features.table.domain.RefreshTableGroupsUseCase
 import org.datepollsystems.waiterrobot.shared.utils.launchCatching

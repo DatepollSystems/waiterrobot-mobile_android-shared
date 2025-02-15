@@ -1,6 +1,7 @@
 package org.datepollsystems.waiterrobot.shared.features.table.presentation.detail
 
 import co.touchlab.skie.configuration.annotations.DefaultArgumentInterop
+import org.datepollsystems.waiterrobot.shared.core.data.Resource
 import org.datepollsystems.waiterrobot.shared.core.navigation.Screen
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.AbstractViewModel
 import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
@@ -27,14 +28,19 @@ class TableDetailViewModel internal constructor(
         TODO("Not yet implemented")
     }
 
-    fun refreshOrder() = intent { loadOrder() }
+    fun refreshOrder() = intent {
+        reduce { state.copy(orderedItems = state.orderedItems.loading()) }
+        loadOrder()
+    }
 
     private suspend fun loadOrder() = subIntent {
-        tableRepository.getUnpaidOrderItems(table).collect { resource ->
-            reduce {
-                state.copy(orderedItems = resource.withDefaultData(state.orderedItems))
+        tableRepository.getUnpaidOrderItems(table)
+            .onSuccess { resource ->
+                reduce { state.copy(orderedItems = Resource.Success(resource)) }
             }
-        }
+            .onFailure { error ->
+                reduce { state.copy(orderedItems = state.orderedItems.error(error)) }
+            }
     }
 
     @DefaultArgumentInterop.Enabled

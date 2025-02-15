@@ -5,8 +5,8 @@ import io.realm.kotlin.ext.toRealmList
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Allergen
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Product
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.Allergen
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.Product
 import org.datepollsystems.waiterrobot.shared.utils.Cents
 import org.datepollsystems.waiterrobot.shared.utils.cent
 

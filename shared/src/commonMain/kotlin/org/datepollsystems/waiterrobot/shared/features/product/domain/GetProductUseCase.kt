@@ -1,9 +1,9 @@
-package org.datepollsystems.waiterrobot.shared.features.order.domain
+package org.datepollsystems.waiterrobot.shared.features.product.domain
 
 import kotlinx.coroutines.flow.first
 import org.datepollsystems.waiterrobot.shared.core.data.AbstractUseCase
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.Product
-import org.datepollsystems.waiterrobot.shared.features.order.domain.repository.ProductRepository
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.Product
+import org.datepollsystems.waiterrobot.shared.features.product.domain.repository.ProductRepository
 
 internal class GetProductUseCase(
     private val productRepository: ProductRepository,

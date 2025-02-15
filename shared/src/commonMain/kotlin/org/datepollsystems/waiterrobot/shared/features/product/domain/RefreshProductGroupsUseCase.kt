@@ -1,11 +1,11 @@
-package org.datepollsystems.waiterrobot.shared.features.order.domain
+package org.datepollsystems.waiterrobot.shared.features.product.domain
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import org.datepollsystems.waiterrobot.shared.core.data.AbstractUseCase
 import org.datepollsystems.waiterrobot.shared.core.data.EventProvider
-import org.datepollsystems.waiterrobot.shared.features.order.domain.repository.ProductGroupRepository
+import org.datepollsystems.waiterrobot.shared.features.product.domain.repository.ProductGroupRepository
 
 internal class RefreshProductGroupsUseCase(
     private val productGroupRepository: ProductGroupRepository,

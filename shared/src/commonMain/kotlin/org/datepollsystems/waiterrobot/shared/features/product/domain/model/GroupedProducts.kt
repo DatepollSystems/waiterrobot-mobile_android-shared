@@ -1,6 +1,6 @@
-package org.datepollsystems.waiterrobot.shared.features.order.domain.model
+package org.datepollsystems.waiterrobot.shared.features.product.domain.model
 
-data class ProductGroup(
+data class GroupedProducts(
     val id: Long,
     val name: String,
     val position: Int,

@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -33,12 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import kotlinx.coroutines.launch
-import org.datepollsystems.waiterrobot.android.ui.core.AlertDialogFromState
 import org.datepollsystems.waiterrobot.android.ui.core.ConfirmDialog
 import org.datepollsystems.waiterrobot.android.ui.core.handleSideEffects
 import org.datepollsystems.waiterrobot.android.ui.core.view.ScaffoldView
+import org.datepollsystems.waiterrobot.android.ui.core.view.ViewStateOverlay
 import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.BillingEffect
-import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.BillingState
 import org.datepollsystems.waiterrobot.shared.features.billing.viewmodel.BillingViewModel
 import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.generated.localization.L
@@ -66,9 +66,7 @@ fun BillingScreen(
     val focusRequest = remember { FocusRequester() }
     var showConfirmGoBack by remember { mutableStateOf(false) }
     var showPaymentSheet by remember { mutableStateOf(false) }
-    val paymentSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val paymentSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     vm.handleSideEffects(navigator) {
         when (it) {
@@ -77,14 +75,14 @@ fun BillingScreen(
         }
     }
 
-    fun goBack() {
+    val goBack: () -> Unit by rememberUpdatedState {
         when {
             state.hasCustomSelection -> showConfirmGoBack = true
             else -> vm.abortBill()
         }
     }
 
-    BackHandler(onBack = ::goBack)
+    BackHandler(onBack = goBack)
 
     if (showConfirmGoBack) {
         ConfirmDialog(
@@ -97,15 +95,10 @@ fun BillingScreen(
         )
     }
 
-    when (val paymentState = state.paymentState) {
-        is BillingState.PaymentState.Error -> AlertDialogFromState(paymentState.dialog)
-        else -> Unit
-    }
-
     ScaffoldView(
         title = L.billing.title(table.groupName, table.number.toString()),
         navigationIcon = {
-            IconButton(onClick = ::goBack) {
+            IconButton(onClick = goBack) {
                 Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
             }
         },
@@ -190,12 +183,16 @@ fun BillingScreen(
                 }
             }
         }
-    ) {
-        // TODO: Add a loading view
-        BillList(
-            table = table,
-            billItems = state.billItems.data ?: emptyList(),
-            addAction = vm::addItem
-        )
+    ) { padding ->
+        ViewStateOverlay(
+            modifier = Modifier.padding(padding),
+            state = state.paymentState,
+        ) {
+            BillList(
+                table = table,
+                billItemResource = state.billItems,
+                addAction = vm::addItem
+            )
+        }
     }
 }

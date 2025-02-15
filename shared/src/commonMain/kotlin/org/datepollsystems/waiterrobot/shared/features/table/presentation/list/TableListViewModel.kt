@@ -6,10 +6,8 @@ import org.datepollsystems.waiterrobot.shared.core.navigation.Screen
 import org.datepollsystems.waiterrobot.shared.core.viewmodel.AbstractViewModel
 import org.datepollsystems.waiterrobot.shared.features.table.domain.GetGroupedTablesUseCase
 import org.datepollsystems.waiterrobot.shared.features.table.domain.HasHiddenGroupsUseCase
-import org.datepollsystems.waiterrobot.shared.features.table.domain.HideTableGroupUseCases
 import org.datepollsystems.waiterrobot.shared.features.table.domain.RefreshTableGroupsUseCase
 import org.datepollsystems.waiterrobot.shared.features.table.domain.UpdateTablesWithOpenOrdersUseCase
-import org.datepollsystems.waiterrobot.shared.features.table.domain.model.GroupedTables
 import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.utils.repeatUntilCanceled
 import org.orbitmvi.orbit.syntax.simple.intent
@@ -22,7 +20,6 @@ class TableListViewModel internal constructor(
     private val getGroupedTablesUseCase: GetGroupedTablesUseCase,
     private val hasHiddenGroupsUseCase: HasHiddenGroupsUseCase,
     private val refreshTableGroupsUseCase: RefreshTableGroupsUseCase,
-    private val hideTableGroupUseCases: HideTableGroupUseCases,
     private val updateTablesWithOpenOrdersUseCase: UpdateTablesWithOpenOrdersUseCase,
 ) : AbstractViewModel<TableListState, TableListEffect>(TableListState()) {
 
@@ -62,18 +59,6 @@ class TableListViewModel internal constructor(
         refreshTableGroupsUseCase().onFailure { exception ->
             reduce { state.copy(tableGroups = Resource.Error(exception, state.tableGroups.data)) }
         }
-    }
-
-    fun toggleFilter(tableGroup: GroupedTables) = intent {
-        hideTableGroupUseCases.toggle(tableGroup.id)
-    }
-
-    fun showAll() = intent {
-        hideTableGroupUseCases.showAll()
-    }
-
-    fun hideAll() = intent {
-        hideTableGroupUseCases.hideAll()
     }
 
     fun onTableClick(table: Table) = intent {

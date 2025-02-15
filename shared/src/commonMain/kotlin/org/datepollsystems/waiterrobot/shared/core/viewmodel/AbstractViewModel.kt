@@ -8,6 +8,7 @@ import org.datepollsystems.waiterrobot.shared.core.di.injectLoggerForClass
 import org.datepollsystems.waiterrobot.shared.core.navigation.NavAction
 import org.datepollsystems.waiterrobot.shared.core.navigation.NavOrViewModelEffect
 import org.datepollsystems.waiterrobot.shared.core.navigation.Screen
+import org.datepollsystems.waiterrobot.shared.utils.extensions.runCatchingCancelable
 import org.koin.core.component.KoinComponent
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
@@ -44,7 +45,11 @@ abstract class AbstractViewModel<S : ViewModelState, E : ViewModelEffect>(
                                 "Exceptions should be handled directly in the intent!"
                         }
                         intent {
-                            onUnhandledException(exception)
+                            runCatchingCancelable {
+                                onUnhandledException(exception)
+                            }.onFailure { e ->
+                                logger.e(e) { "Exception in onUnhandledException" }
+                            }
                         }
                     }
                 }

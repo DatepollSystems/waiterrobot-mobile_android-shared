@@ -1,7 +1,5 @@
 package org.datepollsystems.waiterrobot.shared.features.table.data
 
-import kotlinx.coroutines.flow.Flow
-import org.datepollsystems.waiterrobot.shared.core.data.Resource
 import org.datepollsystems.waiterrobot.shared.core.repository.AbstractRepository
 import org.datepollsystems.waiterrobot.shared.features.billing.api.BillingApi
 import org.datepollsystems.waiterrobot.shared.features.table.data.local.TableDatabase
@@ -9,6 +7,7 @@ import org.datepollsystems.waiterrobot.shared.features.table.data.remote.TableAp
 import org.datepollsystems.waiterrobot.shared.features.table.domain.model.OrderedItem
 import org.datepollsystems.waiterrobot.shared.features.table.domain.model.Table
 import org.datepollsystems.waiterrobot.shared.features.table.domain.repository.TableRepository
+import org.datepollsystems.waiterrobot.shared.utils.extensions.runCatchingCancelable
 
 internal class TableRepositoryImpl(
     private val tableApi: TableApi,
@@ -20,9 +19,9 @@ internal class TableRepositoryImpl(
         tableDatabase.updateTablesWithOrder(ids)
     }
 
-    override fun getUnpaidOrderItems(
+    override suspend fun getUnpaidOrderItems(
         table: Table
-    ): Flow<Resource<List<OrderedItem>>> = remoteResource {
+    ): Result<List<OrderedItem>> = runCatchingCancelable {
         billingApi.getBillForTable(table.id).getBillItems(false).map {
             OrderedItem(
                 baseProductId = it.baseProductId,

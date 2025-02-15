@@ -6,7 +6,7 @@ import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 import kotlinx.datetime.Instant
-import org.datepollsystems.waiterrobot.shared.features.order.domain.model.ProductGroup
+import org.datepollsystems.waiterrobot.shared.features.product.domain.model.GroupedProducts
 import org.datepollsystems.waiterrobot.shared.utils.extensions.Now
 
 internal class ProductGroupEntity() : RealmObject {
@@ -40,7 +40,7 @@ internal class ProductGroupEntity() : RealmObject {
         this.updatedAt = updatedAt.toEpochMilliseconds()
     }
 
-    fun toModel(productNameFilter: String?) = ProductGroup(
+    fun toModel(productNameFilter: String?) = GroupedProducts(
         id = this.id,
         name = this.name,
         position = this.position,

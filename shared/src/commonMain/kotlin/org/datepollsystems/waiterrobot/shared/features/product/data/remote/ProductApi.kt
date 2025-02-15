@@ -1,9 +1,9 @@
-package org.datepollsystems.waiterrobot.shared.features.order.data.remote
+package org.datepollsystems.waiterrobot.shared.features.product.data.remote
 
 import io.ktor.client.call.body
 import org.datepollsystems.waiterrobot.shared.core.data.api.AuthorizedApi
 import org.datepollsystems.waiterrobot.shared.core.data.api.AuthorizedClient
-import org.datepollsystems.waiterrobot.shared.features.order.data.remote.dto.ProductGroupDto
+import org.datepollsystems.waiterrobot.shared.features.product.data.remote.dto.ProductGroupDto
 
 internal class ProductApi(client: AuthorizedClient) : AuthorizedApi("v1/waiter/product", client) {
 

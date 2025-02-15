@@ -34,15 +34,19 @@ fun AlertDialogFromState(dialog: DialogState?) {
 
 @Composable
 fun AlertDialogFromState(state: ViewState) {
-    if (state !is ViewState.Error) return
-    AlertDialog(
-        onDismissRequest = state.onDismiss,
-        title = { Text(text = state.title) },
-        text = { Text(text = state.message) },
-        confirmButton = {
-            Button(onClick = state.onDismiss) {
-                Text(text = L.dialog.ok())
+    when (state) {
+        is ViewState.ErrorDialog -> AlertDialogFromState(state.dialog)
+        is ViewState.Error -> AlertDialog(
+            onDismissRequest = state.onDismiss,
+            title = { Text(text = state.title) },
+            text = { Text(text = state.message) },
+            confirmButton = {
+                Button(onClick = state.onDismiss) {
+                    Text(text = L.dialog.ok())
+                }
             }
-        }
-    )
+        )
+
+        else -> return
+    }
 }

@@ -1,4 +1,4 @@
-package org.datepollsystems.waiterrobot.shared.features.order.data.local
+package org.datepollsystems.waiterrobot.shared.features.product.data.local
 
 import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.delete

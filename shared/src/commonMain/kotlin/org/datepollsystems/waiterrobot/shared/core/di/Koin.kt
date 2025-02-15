@@ -4,6 +4,7 @@ import co.touchlab.kermit.Logger
 import org.datepollsystems.waiterrobot.shared.features.auth.di.loginModule
 import org.datepollsystems.waiterrobot.shared.features.billing.di.billingModule
 import org.datepollsystems.waiterrobot.shared.features.order.orderModule
+import org.datepollsystems.waiterrobot.shared.features.product.productModule
 import org.datepollsystems.waiterrobot.shared.features.settings.di.settingsModule
 import org.datepollsystems.waiterrobot.shared.features.stripe.di.stripeModule
 import org.datepollsystems.waiterrobot.shared.features.switchevent.di.switchEventModule
@@ -25,6 +26,7 @@ internal fun initKoin(appDeclaration: KoinAppDeclaration?) = startKoin {
         loginModule,
         switchEventModule,
         tableModule,
+        productModule,
         orderModule,
         billingModule,
         settingsModule,
